@@ -3,7 +3,9 @@
 
 // Kita load Controller secara manual (karena tanpa Composer autoloader)
 require_once 'app/Controllers/ProductController.php';
+require_once 'app/Controllers/HomeController.php';
 
+use App\Controllers\HomeController;
 use App\Controllers\ProductController;
 
 // Ambil parameter 'page' dari URL (contoh: index.php?page=product)
@@ -15,7 +17,8 @@ $controller = new ProductController();
 // LOGIKA ROUTING SEDERHANA
 switch ($page) {
     case 'home':
-        require_once __DIR__ . '/views/dashboard.php';
+        $home = new HomeController(); // Inisialisasi Controller
+        $home->index();               // Panggil method index
         break;
 
     // --- READ ---
