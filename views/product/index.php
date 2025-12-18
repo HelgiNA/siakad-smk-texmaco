@@ -1,7 +1,7 @@
 <?php ob_start(); ?>
 
 <div class="d-flex justify-content-between mb-3">
-    <h2><?php echo $title;?></h2>
+    <h2><?php echo $title; ?></h2>
     <a href="?page=product_create" class="btn btn-primary">Tambah Produk</a>
 </div>
 
@@ -18,13 +18,13 @@
     <tbody>
         <?php foreach ($products as $index => $p): ?>
         <tr>
-            <td><?php echo $index + 1;?></td>
-            <td><?php echo htmlspecialchars($p['name']);?></td>
-            <td>Rp <?php echo number_format($p['price']);?></td>
-            <td><?php echo $p['stock'];?></td>
+            <td><?php echo $index + 1; ?></td>
+            <td><?php echo htmlspecialchars($p['name']); ?></td>
+            <td>Rp <?php echo number_format($p['price']); ?></td>
+            <td><?php echo $p['stock']; ?></td>
             <td>
-                <a href="?page=product_edit&id=<?php echo $p['id'];?>" class="btn btn-sm btn-warning">Edit</a>
-                <a href="?page=product_delete&id=<?php echo $p['id'];?>" class="btn btn-sm btn-danger"
+                <a href="?page=product_edit&id=<?php echo $p['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
+                <a href="?page=product_delete&id=<?php echo $p['id']; ?>" class="btn btn-sm btn-danger"
                     onclick="return confirm('Yakin hapus?')">Hapus</a>
             </td>
         </tr>
