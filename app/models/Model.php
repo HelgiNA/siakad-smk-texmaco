@@ -1,8 +1,7 @@
 <?php
 namespace App\Models; // Ini Namespace
 
-require_once __DIR__ . '/../../config/database.php';
-use Database; // Kita 'use' class Database dari file config
+use App\Core\Database; // Kita 'use' class Database dari file config
 use PDO;
 
 class Model

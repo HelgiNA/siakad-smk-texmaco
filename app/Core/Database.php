@@ -1,11 +1,15 @@
 <?php
-// config/database.php
+namespace App\Core;
+
+use PDO;
+use PDOException;
+
 class Database
 {
-    private $host     = "localhost";
-    private $db_name  = "db_siakad_texmaco"; // Sesuaikan nama DB
-    private $username = "root";
-    private $password = "";
+    private $host     = DB_HOST;
+    private $db_name  = DB_NAME;
+    private $username = DB_USERNAME;
+    private $password = DB_PASSWORD;
     public $conn;
 
     public function getConnection()

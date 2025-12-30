@@ -1,27 +1,16 @@
 <?php
 
 session_start();
-$_SESSION['error'] = 'asdad';
-require_once 'app/controllers/ProductController.php';
-require_once 'app/controllers/HomeController.php';
-require_once 'app/controllers/AuthController.php';
-require_once 'config/Route.php';
-require_once 'config/Middleware.php';
 
-use App\Controllers\AuthController;
-use App\Controllers\HomeController;
-use App\Controllers\ProductController;
+require_once 'app/Core/database.php';
+require_once 'app/Core/Route.php';
+require_once 'app/Core/Middleware.php';
 
-$routes = new Route();
+require_once 'config/config.php';
 
-$routes->get('/', [HomeController::class, 'index'], 'authMiddleware');
-$routes->get('/dashboard', [HomeController::class, 'index'], 'authMiddleware');
-$routes->get('/login', [AuthController::class, 'login']);
-$routes->post('/login', [AuthController::class, 'submitLogin']);
-$routes->get('/logout', [AuthController::class, 'logout'], 'authMiddleware');
+require_once 'app/Controllers/HomeController.php';
+require_once 'app/Controllers/AuthController.php';
 
-$routes->get('/product', [ProductController::class, 'index'], 'authMiddleware');
-$routes->get('/product/create', [ProductController::class, 'create'], 'authMiddleware');
-$routes->post('/product', [ProductController::class, 'store'], 'authMiddleware');
+$routes = require_once 'config/routes.php';
 
 $routes->run();
