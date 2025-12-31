@@ -4,6 +4,7 @@ use App\Controllers\AuthController;
 use App\Controllers\GuruController;
 use App\Controllers\HomeController;
 use App\Controllers\KelasController;
+use App\Controllers\MapelController;
 use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
@@ -59,5 +60,13 @@ $routes->post('/kelas/store', [KelasController::class, 'store'], 'authMiddleware
 $routes->get('/kelas/edit', [KelasController::class, 'edit'], 'authMiddleware');
 $routes->post('/kelas/update', [KelasController::class, 'update'], 'authMiddleware');
 $routes->get('/kelas/delete', [KelasController::class, 'destroy'], 'authMiddleware');
+
+// MANAJEMEN MATA PELAJARAN
+$routes->get('/mapel', [MapelController::class, 'index'], 'authMiddleware');
+$routes->get('/mapel/create', [MapelController::class, 'create'], 'authMiddleware');
+$routes->post('/mapel/store', [MapelController::class, 'store'], 'authMiddleware');
+$routes->get('/mapel/edit', [MapelController::class, 'edit'], 'authMiddleware');
+$routes->post('/mapel/update', [MapelController::class, 'update'], 'authMiddleware');
+$routes->get('/mapel/delete', [MapelController::class, 'destroy'], 'authMiddleware');
 
 return $routes;

@@ -140,7 +140,7 @@
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <img src="<?php echo BASE_URL ?>/public/assets/img/user2-160x160.jpg" class="user-image rounded-circle shadow"
                         alt="User Image" />
-                    <span class="d-none d-md-inline"><?php echo $_SESSION['username'] ?? 'user'; ?></span>
+                    <span class="d-none d-md-inline"><?php echo $_SESSION['username'] ?? 'Guest'; ?></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
                     <!--begin::User Image-->

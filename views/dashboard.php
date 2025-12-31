@@ -10,7 +10,7 @@
                 </div>
             </div>
             <div class="card-body">
-                Selamat Datang, <b><?php echo $_SESSION['username'] ?? 'User'; ?></b>! <br>
+                Selamat Datang, <b><?php echo $_SESSION['username'] ?? 'Guest'; ?></b>! <br>
                 Start creating your amazing application!
             </div>
             <div class="card-footer">Footer</div>

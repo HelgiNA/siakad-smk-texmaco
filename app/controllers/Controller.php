@@ -33,7 +33,10 @@ class Controller
                 }
 
                 // Simpan pesan ke session flash
-                $_SESSION['flash'][$key] = $value;
+                $_SESSION['flash'] = [
+                    'type'    => $key,
+                    'message' => $value,
+                ];
 
                 // Lakukan pengalihan halaman
                 header("Location: " . BASE_URL . '/' . $this->url);

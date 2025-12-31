@@ -26,14 +26,14 @@ class UserController extends Controller
             'users' => User::getAll(),
         ];
 
-        $this->view('user/index', $data);
+        $this->view('users/index', $data);
     }
 
     // MENAMPILKAN FORM TAMBAH
     public function create()
     {
         $data = ['title' => 'Tambah User Baru'];
-        $this->view('user/create', $data);
+        $this->view('users/create', $data);
     }
 
     // MENYIMPAN DATA USER BARU
@@ -97,7 +97,7 @@ class UserController extends Controller
             'user'  => $user,
         ];
 
-        $this->view('user/edit', $data);
+        $this->view('users/edit', $data);
     }
 
     // PROSES UPDATE KE DATABASE

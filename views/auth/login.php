@@ -9,12 +9,6 @@
         <div class="card-body login-card-body">
             <p class="login-box-msg">Silakan login untuk masuk sistem</p>
 
-            <?php if (isset($_SESSION['flash']['error'])): ?>
-            <div class="alert alert-danger text-center">
-                <?php echo $_SESSION['flash']['error']; ?>
-            </div>
-            <?php endif; ?>
-
             <form action="/login" method="post">
                 <div class="input-group mb-3">
                     <input type="text" name="username" class="form-control" placeholder="Username">
