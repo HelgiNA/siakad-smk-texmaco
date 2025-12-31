@@ -118,7 +118,7 @@ class UserController extends Controller
     }
 
     // MENGHAPUS USER
-    public function delete()
+    public function destroy()
     {
         $id = $_GET['id'] ?? null;
 

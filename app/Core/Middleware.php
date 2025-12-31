@@ -7,3 +7,9 @@ function authMiddleware()
         exit;
     }
 }
+
+function dd($data)
+{
+    echo "<pre>";
+    die(var_dump($data));
+}

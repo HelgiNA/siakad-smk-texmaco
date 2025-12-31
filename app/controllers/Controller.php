@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 class Controller
 {
+
     // Fungsi helper buatan sendiri agar mirip Laravel
     public function view($viewPath, $data = [])
     {

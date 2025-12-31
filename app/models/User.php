@@ -12,7 +12,6 @@ class User extends Model
 {
     protected $table      = "users";
     protected $primaryKey = "user_id";
-    protected $fillable   = ["username", "password", "role"];
 
     // Fungsi 1: Mengambil data user untuk Login
     // Sesuai Sequence Diagram SIA-001

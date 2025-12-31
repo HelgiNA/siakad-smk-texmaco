@@ -5,7 +5,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-    <title><?php echo $title ?? 'Website Saya'; ?></title>
+    <title><?php echo APP_NAME . " | " . $title ?? 'Belum Terdefinisi'; ?></title>
     <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
@@ -13,7 +13,7 @@
     <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
     <!--end::Accessibility Meta Tags-->
     <!--begin::Primary Meta Tags-->
-    <meta name="title" content="AdminLTE 4 | Unfixed Sidebar" />
+    <meta name="title" content="<?php echo APP_NAME . " | " . $title ?? 'Belum Terdefinisi'; ?>" />
     <meta name="author" content="ColorlibHQ" />
     <meta name="description"
         content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS. Fully accessible with WCAG 2.1 AA compliance." />
@@ -84,12 +84,13 @@
                     <!--begin::Row-->
                     <div class="row">
                         <div class="col-sm-6">
-                            <h3 class="mb-0">Unfixed Layout</h3>
+                            <h3 class="mb-0"><?php echo $title ?? 'Belum Terdefinisi'; ?></h3>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-end">
                                 <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Unfixed Layout</li>
+                                <li class="breadcrumb-item active" aria-current="page">
+                                    <?php echo $title ?? 'Belum Terdefinisi'; ?></li>
                             </ol>
                         </div>
                     </div>
