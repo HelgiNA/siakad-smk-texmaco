@@ -3,6 +3,7 @@
 use App\Controllers\AuthController;
 use App\Controllers\GuruController;
 use App\Controllers\HomeController;
+use App\Controllers\JadwalController;
 use App\Controllers\KelasController;
 use App\Controllers\MapelController;
 use App\Controllers\SiswaController;
@@ -68,5 +69,13 @@ $routes->post('/mapel/store', [MapelController::class, 'store'], 'authMiddleware
 $routes->get('/mapel/edit', [MapelController::class, 'edit'], 'authMiddleware');
 $routes->post('/mapel/update', [MapelController::class, 'update'], 'authMiddleware');
 $routes->get('/mapel/delete', [MapelController::class, 'destroy'], 'authMiddleware');
+
+// JADWAL PELAJARAN
+$routes->get('/jadwal', [JadwalController::class, 'index'], 'authMiddleware');
+$routes->get('/jadwal/create', [JadwalController::class, 'create'], 'authMiddleware');
+$routes->post('/jadwal/store', [JadwalController::class, 'store'], 'authMiddleware');
+$routes->get('/jadwal/edit', [JadwalController::class, 'edit'], 'authMiddleware');
+$routes->post('/jadwal/update', [JadwalController::class, 'update'], 'authMiddleware');
+$routes->get('/jadwal/delete', [JadwalController::class, 'destroy'], 'authMiddleware');
 
 return $routes;

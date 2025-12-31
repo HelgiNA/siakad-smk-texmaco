@@ -42,13 +42,13 @@
                     <td>
                         <a href="<?php echo BASE_URL ?>/siswa/edit?id=<?php echo $student['siswa_id'] ?>"
                             class="btn btn-sm btn-warning">
-                            <i class="fas fa-edit"></i> Edit
+                            <i class="bi bi-edit"></i>
                         </a>
 
                         <a href="<?php echo BASE_URL ?>/siswa/delete?id=<?php echo $student['siswa_id'] ?>"
                             class="btn btn-sm btn-danger"
                             onclick="return confirm('Apakah Anda yakin ingin menghapus data siswa ini?')">
-                            <i class="fas fa-trash"></i> Hapus
+                            <i class="bi bi-trash"></i>
                         </a>
                     </td>
                 </tr>

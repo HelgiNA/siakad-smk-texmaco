@@ -57,13 +57,13 @@
                     <td>
                         <a href="<?php echo BASE_URL ?>/guru/edit?id=<?php echo $guru['guru_id'] ?>"
                             class="btn btn-sm btn-warning">
-                            <i class="fas fa-edit"></i> Edit
+                            <i class="bi bi-pencil"></i>
                         </a>
 
                         <a href="<?php echo BASE_URL ?>/guru/delete?id=<?php echo $guru['guru_id'] ?>"
                             class="btn btn-sm btn-danger"
                             onclick="return confirm('Apakah Anda yakin ingin menghapus data guru ini?')">
-                            <i class="fas fa-trash"></i> Hapus
+                            <i class="bi bi-trash"></i>
                         </a>
                     </td>
                 </tr>

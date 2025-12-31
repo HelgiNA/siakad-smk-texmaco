@@ -37,13 +37,13 @@
                     <td>
                         <a href="<?php echo BASE_URL ?>/users/edit?id=<?php echo $user['user_id'] ?>"
                             class="btn btn-xs btn-warning">
-                            <i class="fas fa-edit"></i> Edit
+                            <i class="bi bi-pencil"></i>
                         </a>
 
                         <a href="<?php echo BASE_URL ?>/users/delete?id=<?php echo $user['user_id'] ?>"
                             class="btn btn-xs btn-danger"
                             onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">
-                            <i class="fas fa-trash"></i> Hapus
+                            <i class="bi bi-trash"></i>
                         </a>
                     </td>
                 </tr>

@@ -131,26 +131,34 @@ INSERT INTO `guru` VALUES (3, 5, '19900303', 'Anton Wijaya, S.Si');
 -- ----------------------------
 -- Table structure for jadwal
 -- ----------------------------
-DROP TABLE IF EXISTS `jadwal`;
-CREATE TABLE `jadwal`  (
+
+DROP TABLE IF EXISTS `jadwal_pelajaran`;
+CREATE TABLE `jadwal_pelajaran` (
   `jadwal_id` int(11) NOT NULL AUTO_INCREMENT,
   `tahun_id` int(11) NOT NULL,
   `kelas_id` int(11) NOT NULL,
   `mapel_id` int(11) NOT NULL,
   `guru_id` int(11) NOT NULL,
-  `hari` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_uca1400_ai_ci NOT NULL COMMENT 'Senin, Selasa, dst',
-  `jam_mulai` time NOT NULL,
-  `jam_selesai` time NOT NULL,
-  PRIMARY KEY (`jadwal_id`) USING BTREE,
-  INDEX `tahun_id`(`tahun_id` ASC) USING BTREE,
-  INDEX `kelas_id`(`kelas_id` ASC) USING BTREE,
-  INDEX `mapel_id`(`mapel_id` ASC) USING BTREE,
-  INDEX `guru_id`(`guru_id` ASC) USING BTREE,
-  CONSTRAINT `jadwal_ibfk_1` FOREIGN KEY (`tahun_id`) REFERENCES `tahun_ajaran` (`tahun_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `jadwal_ibfk_2` FOREIGN KEY (`kelas_id`) REFERENCES `kelas` (`kelas_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
-  CONSTRAINT `jadwal_ibfk_3` FOREIGN KEY (`mapel_id`) REFERENCES `mata_pelajaran` (`mapel_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `jadwal_ibfk_4` FOREIGN KEY (`guru_id`) REFERENCES `guru` (`guru_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;
+  `hari` ENUM('Senin','Selasa','Rabu','Kamis','Jumat','Sabtu') NOT NULL,
+  `jam_mulai` TIME NOT NULL,
+  `jam_selesai` TIME NOT NULL,
+  PRIMARY KEY (`jadwal_id`),
+  INDEX `idx_tahun` (`tahun_id`, ASC) USING BTREE,
+  INDEX `idx_kelas` (`kelas_id`, ASC) USING BTREE,
+  INDEX `idx_mapel` (`mapel_id`, ASC) USING BTREE,
+  INDEX `idx_guru` (`guru_id`, ASC) USING BTREE,
+  CONSTRAINT `fk_jadwal_pelajaran_tahun` FOREIGN KEY (`tahun_id`) REFERENCES `tahun_ajaran` (`tahun_id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_jadwal_pelajaran_kelas` FOREIGN KEY (`kelas_id`) REFERENCES `kelas` (`kelas_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_jadwal_pelajaran_mapel` FOREIGN KEY (`mapel_id`) REFERENCES `mata_pelajaran` (`mapel_id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_jadwal_pelajaran_guru` FOREIGN KEY (`guru_id`) REFERENCES `guru` (`guru_id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_uca1400_ai_ci ROW_FORMAT = Dynamic;;
+
+-- ----------------------------
+-- Records of jadwal_pelajaran
+-- ----------------------------
+INSERT INTO `jadwal_pelajaran` VALUES (1, 2, 1, 1, 1, 'Senin', '07:00:00', '08:30:00');
+INSERT INTO `jadwal_pelajaran` VALUES (2, 2, 1, 3, 3, 'Senin', '08:45:00', '10:15:00');
+INSERT INTO `jadwal_pelajaran` VALUES (3, 2, 2, 4, 2, 'Senin', '07:00:00', '08:30:00');
 
 -- ----------------------------
 -- Records of jadwal
