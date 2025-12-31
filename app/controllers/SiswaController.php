@@ -22,7 +22,7 @@ class SiswaController extends Controller
     public function index()
     {
         $data = [
-            'title'    => 'Data Siswa',
+            'title'    => 'Master Data Siswa',
             'students' => Siswa::getAllWithUser(),
         ];
         $this->view('master/siswa/index', $data);
@@ -74,13 +74,13 @@ class SiswaController extends Controller
             'nama_lengkap'  => $data['nama_lengkap'],
             'tanggal_lahir' => $data['tanggal_lahir'],
             'alamat'        => $data['alamat'],
-            'user_id'       => $userResult['data']['user_id'], // <--- AMAN & JELAS
+            'user_id'       => $userResult['lastInsertId'], // <--- AMAN & JELAS
         ]);
 
         if ($siswaResult['status'] === false) {
-            User::delete($userResult['data']['user_id']);
+            User::delete($userResult['lastInsertId']);
 
-            $this->redirect('siswa/create')->with('error', 'Gagal menyimpan data siswa: ' . $siswaResult['error']);
+            $this->redirect('siswa/create')->with('error', 'Gagal menyimpan data siswa: ' . $siswaResult['error'] . " " . $userResult);
             die();
         }
 
@@ -180,7 +180,7 @@ class SiswaController extends Controller
         }
 
         // 3. Hapus data User (Parent)
-        $deleteResult = User::delete($student['user_id']);
+        $deleteResult = User::delete($student);
 
         // CEK STATUS
         if ($deleteResult['status'] === false) {

@@ -201,6 +201,31 @@
                 </li>
             </ul>
         </li>
+
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <i class="nav-icon bi bi-server"></i>
+                <p>
+                    Master Data
+                    <i class="nav-arrow bi bi-chevron-right"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="<?php echo BASE_URL ?>/siswa" class="nav-link">
+                        <i class="nav-icon bi bi-people"></i>
+                        <p>Data Siswa</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?php echo BASE_URL ?>/guru" class="nav-link">
+                        <i class="nav-icon bi bi-person-badge"></i>
+                        <p>Data Guru</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <li class="nav-header">EXAMPLES</li>
         <li class="nav-item">
             <a href="#" class="nav-link">

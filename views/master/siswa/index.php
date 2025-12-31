@@ -1,11 +1,24 @@
 <?php ob_start(); ?>
 
+
 <?php if (isset($_SESSION['flash']['success'])): ?>
-<div class="alert alert-success"><?php echo $_SESSION['flash']['success'];unset($_SESSION['flash']['success']); ?></div>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <?php echo $_SESSION['flash']['success']; ?>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<?php unset($_SESSION['flash']['success']); ?>
 <?php endif; ?>
 
 <?php if (isset($_SESSION['flash']['error'])): ?>
-<div class="alert alert-danger"><?php echo $_SESSION['flash']['error'];unset($_SESSION['flash']['error']); ?></div>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <?php echo $_SESSION['flash']['error']; ?>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<?php unset($_SESSION['flash']['error']); ?>
 <?php endif; ?>
 
 <div class="card">
@@ -18,7 +31,7 @@
         </div>
     </div>
     <div class="card-body p-0">
-        <table class="table table-striped">
+        <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th style="width: 10px">#</th>
@@ -59,12 +72,12 @@
                     </td>
                     <td>
                         <a href="<?php echo BASE_URL ?>/siswa/edit?id=<?php echo $student['siswa_id'] ?>"
-                            class="btn btn-xs btn-warning">
+                            class="btn btn-sm btn-warning">
                             <i class="fas fa-edit"></i> Edit
                         </a>
 
                         <a href="<?php echo BASE_URL ?>/siswa/delete?id=<?php echo $student['siswa_id'] ?>"
-                            class="btn btn-xs btn-danger"
+                            class="btn btn-sm btn-danger"
                             onclick="return confirm('Apakah Anda yakin ingin menghapus data siswa ini?')">
                             <i class="fas fa-trash"></i> Hapus
                         </a>

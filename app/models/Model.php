@@ -17,9 +17,9 @@ class Model
 
     // Siapkan format response default
     public $response = [
-        'status' => false,
-        'data'   => null,
-        'error'  => null,
+        'status'       => false,
+        'lastInsertId' => null,
+        'error'        => null,
     ];
 
     public function __construct()
@@ -40,7 +40,8 @@ class Model
     {
         $instance = new static();
         $stmt     = $instance->conn->prepare("SELECT * FROM " . $instance->table . " WHERE " . $instance->primaryKey . " = :_primary_id");
-        $stmt->execute(['_primary_id' => $id]);
+        $stmt->bindParam(":_primary_id", $id);
+        $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
@@ -96,7 +97,6 @@ class Model
     // Untuk Memenuhi Sequence Diagram SIA-003 dan SIA-011
 
     // Fungsi 1: Create($data)
-// Fungsi 1: Create($data)
     public static function create($data)
     {
         $instance = new static();
@@ -113,15 +113,14 @@ class Model
             $stmt->execute($data);
 
             // Ambil ID terakhir
-            $data = $instance->find($instance->conn->lastInsertId());
+            $lastInsertId = $instance->conn->lastInsertId();
             $instance->conn->commit();
 
             // Isi response sukses
-            $instance->response['status'] = true;
-            $instance->response['data']   = $data;
+            $instance->response['status']       = true;
+            $instance->response['lastInsertId'] = $lastInsertId;
 
             return $instance->response;
-
         } catch (PDOException $e) {
             $instance->conn->rollBack();
 
@@ -153,11 +152,11 @@ class Model
             $stmt = $instance->conn->prepare($query);
             $stmt->execute($data);
 
+            $lastInsertId = $instance->conn->lastInsertId();
             $instance->conn->commit();
-            $dataNew = $instance->find($id);
 
-            $instance->response['status'] = true;
-            $instance->response['data']   = $dataNew;
+            $instance->response['status']       = true;
+            $instance->response['lastInsertId'] = $lastInsertId;
 
             return $instance->response;
         } catch (PDOException $e) {
@@ -185,11 +184,14 @@ class Model
             $stmt->execute();
 
             $instance->conn->commit();
-            return true;
+
+            $instance->response['status'] = true;
+            return $instance->response;
         } catch (PDOException $e) {
             $instance->conn->rollBack();
-            $instance->error($e);
-            return false;
+            $instance->response['status'] = false;
+            $instance->response['error']  = $e->getMessage(); // Pesan error asli dari SQL
+            return $instance->response;
         }
     }
 }
