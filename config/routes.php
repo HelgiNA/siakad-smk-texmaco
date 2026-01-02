@@ -228,7 +228,7 @@ $routes->get(
 // =============================================================================
 
 // JADWAL PELAJARAN (Admin yang atur)
-$routes->get("/jadwal", [JadwalController::class, "index"], ["auth"]); // Guru boleh lihat
+$routes->get("/jadwal", [JadwalController::class, "index"], ["auth", "role:Admin"]); // Guru boleh lihat
 $routes->get(
     "/jadwal/create",
     [JadwalController::class, "create"],
