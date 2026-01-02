@@ -1,286 +1,475 @@
-<style>
-    /* Container pembungkus (Opsional, hanya untuk demo ini) */
-    .alert-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        max-width: 600px;
-        margin: 20px auto;
-        font-family:
-            system-ui,
-            -apple-system,
-            sans-serif;
-    }
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Absensi Siswa</title>
+    
+    <style>
+        :root {
+            /* --- Color Palette --- */
+            --c-primary: #2563eb;       /* Action Blue */
+            --c-primary-dark: #1e40af;
+            --c-bg-body: #f3f4f6;
+            --c-bg-card: #ffffff;
+            --c-text-main: #111827;
+            --c-text-muted: #6b7280;
+            --c-border: #e5e7eb;
 
-    /* Base Alert Style */
-    .alert {
-        position: relative;
-        padding: 16px 20px;
-        border-radius: 8px;
-        border-left: 5px solid;
-        display: flex;
-        align-items: flex-start;
-        background-color: #fff;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        animation: fadeIn 0.4s ease;
-    }
+            /* --- Status Colors --- */
+            --s-hadir: #10b981;  /* Green */
+            --s-hadir-bg: #d1fae5;
+            --s-sakit: #06b6d4;  /* Teal/Blue-Green */
+            --s-sakit-bg: #cffafe;
+            --s-izin: #3b82f6;   /* Blue */
+            --s-izin-bg: #dbeafe;
+            --s-alfa: #ef4444;   /* Red */
+            --s-alfa-bg: #fee2e2;
 
-    @keyframes fadeIn {
-        from {
+            /* --- Spacing & Radius --- */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-full: 9999px;
+        }
+
+        /* --- Reset & Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--c-bg-body);
+            color: var(--c-text-main);
+            padding: var(--space-md);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        form {
+            width: 100%;
+            max-width: 480px; /* Mobile-first compact width */
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        /* --- Utility: Icons --- */
+        svg { width: 20px; height: 20px; stroke-width: 2; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+
+        /* --- COMPONENT 1: Status Summary Card --- */
+        .card-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-sm);
+            background: var(--c-bg-card);
+            padding: var(--space-md);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px;
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .status-item span {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--c-text-muted);
+        }
+
+        /* Icon Colors per Status */
+        .status-item[data-type="hadir"] { color: var(--s-hadir); background: var(--s-hadir-bg); }
+        .status-item[data-type="sakit"] { color: var(--s-sakit); background: var(--s-sakit-bg); }
+        .status-item[data-type="izin"] { color: var(--s-izin); background: var(--s-izin-bg); }
+        .status-item[data-type="alfa"] { color: var(--s-alfa); background: var(--s-alfa-bg); }
+
+        /* --- COMPONENT 2: Daily Note Input --- */
+        .card-note {
+            background: var(--c-bg-card);
+            padding: var(--space-md);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-note label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+        }
+
+        .card-note textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .card-note textarea:focus { outline: 2px solid var(--c-primary); border-color: transparent; }
+
+        /* --- COMPONENT 3 & 4: Student Table & Selector --- */
+        .card-table {
+            background: var(--c-bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden; /* Contains children */
+        }
+
+        .table-row {
+            display: flex;
+            align-items: center;
+            padding: 12px var(--space-md);
+            border-bottom: 1px solid var(--c-border);
+            height: 64px; /* Consistent height */
+        }
+        .table-row:last-child { border-bottom: none; }
+
+        .student-idx {
+            width: 30px;
+            color: var(--c-text-muted);
+            font-size: 0.85rem;
+        }
+
+        .student-name {
+            flex: 1;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 10px;
+        }
+
+        /* Interactive Selector Area */
+        .attendance-control {
+            position: relative;
+        }
+
+        /* The Trigger Button (Ellipsis or Status Icon) */
+        .btn-trigger {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--c-border);
+            background: white;
+            color: var(--c-text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-trigger:hover { background-color: var(--c-bg-body); }
+        
+        /* Active States for Trigger */
+        .btn-trigger.is-hadir { background: var(--s-hadir); color: white; border-color: var(--s-hadir); }
+        .btn-trigger.is-sakit { background: var(--s-sakit); color: white; border-color: var(--s-sakit); }
+        .btn-trigger.is-izin { background: var(--s-izin); color: white; border-color: var(--s-izin); }
+        .btn-trigger.is-alfa { background: var(--s-alfa); color: white; border-color: var(--s-alfa); }
+
+        /* The Popup Menu (Inline Selector) */
+        .option-menu {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 4px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid var(--c-border);
+            display: flex;
+            gap: 4px;
+            z-index: 10;
             opacity: 0;
-            transform: translateY(-10px);
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            transform-origin: right center;
         }
-        to {
+
+        .option-menu.active {
             opacity: 1;
-            transform: translateY(0);
+            pointer-events: auto;
+            right: 48px; /* Shift to left of trigger */
         }
-    }
 
-    /* Icon Style */
-    .alert-icon {
-        width: 24px;
-        height: 24px;
-        margin-right: 15px;
-        margin-top: 2px;
-        flex-shrink: 0;
-    }
-    .alert-icon svg {
-        width: 100%;
-        height: 100%;
-    }
+        .option-item {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .option-item:hover { transform: scale(1.1); }
+        
+        /* Option Colors */
+        .bg-hadir { background: var(--s-hadir-bg); color: var(--s-hadir); }
+        .bg-sakit { background: var(--s-sakit-bg); color: var(--s-sakit); }
+        .bg-izin { background: var(--s-izin-bg); color: var(--s-izin); }
+        .bg-alfa { background: var(--s-alfa-bg); color: var(--s-alfa); }
 
-    /* Content Text */
-    .alert-content {
-        flex: 1;
-    }
-    .alert-content strong {
-        display: block;
-        font-size: 16px;
-        margin-bottom: 4px;
-    }
-    .alert-content p {
-        font-size: 14px;
-        margin: 0;
-        line-height: 1.5;
-        opacity: 0.9;
-    }
+        /* --- COMPONENT 5: Count Summary --- */
+        .card-count {
+            display: flex;
+            justify-content: space-between;
+            background: var(--c-bg-card);
+            padding: var(--space-md);
+            border-radius: var(--radius-lg);
+            margin-top: -8px; /* Visual stacking */
+        }
 
-    /* Close Button (X) */
-    .alert-close {
-        background: none;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        color: inherit;
-        opacity: 0.6;
-        padding: 0;
-        margin-left: 10px;
-        line-height: 1;
-    }
-    .alert-close:hover {
-        opacity: 1;
-    }
+        .count-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .count-val { font-size: 1.25rem; font-weight: 700; color: var(--c-text-main); }
+        .count-lbl { font-size: 0.75rem; color: var(--c-text-muted); text-transform: uppercase; }
 
-    /* --- TEMA WARNA (Background Tint + Border) --- */
+        /* --- COMPONENT 6: Action Button --- */
+        .btn-submit {
+            width: 100%;
+            background-color: var(--c-primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background-color: var(--c-primary-dark); }
+        .btn-submit:disabled { background-color: var(--c-text-muted); cursor: not-allowed; opacity: 0.7; }
 
-    /* 1. Success (Green) */
-    .alert-success {
-        background-color: #e8f5e9; /* Hijau muda sekali */
-        border-left-color: #2e7d32;
-        color: #1b5e20;
-    }
+    </style>
+</head>
+<body>
 
-    /* 2. Info (Blue) */
-    .alert-info {
-        background-color: #e3f2fd; /* Biru muda sekali */
-        border-left-color: #1976d2;
-        color: #0d47a1;
-    }
+    <svg style="display: none;">
+        <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></symbol>
+        <symbol id="icon-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></symbol>
+        <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></symbol>
+        <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></symbol>
+        <symbol id="icon-dots" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></symbol>
+    </svg>
 
-    /* 3. Warning (Orange/Amber) */
-    .alert-warning {
-        background-color: #fff8e1; /* Kuning muda sekali */
-        border-left-color: #ffa000;
-        color: #e65100;
-    }
-
-    /* 4. Error (Red) */
-    .alert-error {
-        background-color: #ffebee; /* Merah muda sekali */
-        border-left-color: #d32f2f;
-        color: #b71c1c;
-    }
-
-    /* 5. Question (Purple) */
-    .alert-question {
-        background-color: #f3e5f5; /* Ungu muda sekali */
-        border-left-color: #7b1fa2;
-        color: #4a148c;
-    }
-
-    /* Tombol Khusus di dalam Alert Question */
-    .alert-buttons {
-        margin-top: 12px;
-        display: flex;
-        gap: 10px;
-    }
-    .alert-buttons button {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        font-size: 13px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s;
-    }
-
-    /* Tombol Primary (Solid) */
-    .btn-alert-primary {
-        background-color: #7b1fa2;
-        color: white;
-    }
-    .btn-alert-primary:hover {
-        background-color: #6a1b9a;
-    }
-
-    /* Tombol Secondary (Outline/Soft) */
-    .btn-alert-secondary {
-        background-color: rgba(123, 31, 162, 0.1);
-        color: #7b1fa2;
-    }
-    .btn-alert-secondary:hover {
-        background-color: rgba(123, 31, 162, 0.2);
-    }
-</style>
-
-<div class="alert-wrapper">
-    <div class="alert alert-success">
-        <div class="alert-icon">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-        </div>
-        <div class="alert-content">
-            <strong>Pembayaran Diterima</strong>
-            <p>Terima kasih! Transaksi #99281 telah berhasil diverifikasi.</p>
-        </div>
-        <button
-            class="alert-close"
-            onclick="this.parentElement.style.display='none';"
-        >
-            &times;
-        </button>
-    </div>
-
-    <div class="alert alert-info">
-        <div class="alert-icon">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-        </div>
-        <div class="alert-content">
-            <strong>Tips Baru</strong>
-            <p>
-                Anda sekarang bisa menggunakan shortcut "Ctrl + S" untuk
-                menyimpan.
-            </p>
-        </div>
-        <button
-            class="alert-close"
-            onclick="this.parentElement.style.display='none';"
-        >
-            &times;
-        </button>
-    </div>
-
-    <div class="alert alert-warning">
-        <div class="alert-icon">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <path
-                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                ></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-        </div>
-        <div class="alert-content">
-            <strong>Akun Belum Terverifikasi</strong>
-            <p>
-                Beberapa fitur mungkin dibatasi hingga Anda memverifikasi email.
-            </p>
-        </div>
-        <button
-            class="alert-close"
-            onclick="this.parentElement.style.display='none';"
-        >
-            &times;
-        </button>
-    </div>
-
-    <div class="alert alert-error">
-        <div class="alert-icon">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="15" y1="9" x2="9" y2="15"></line>
-                <line x1="9" y1="9" x2="15" y2="15"></line>
-            </svg>
-        </div>
-        <div class="alert-content">
-            <strong>Gagal Memuat Data</strong>
-            <p>Koneksi terputus. Silakan periksa jaringan internet Anda.</p>
-        </div>
-        <button
-            class="alert-close"
-            onclick="this.parentElement.style.display='none';"
-        >
-            &times;
-        </button>
-    </div>
-
-    <div class="alert alert-question">
-        <div class="alert-icon">
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-            >
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-        </div>
-        <div class="alert-content">
-            <strong>Mulai Ujian Sekarang?</strong>
-            <p>
-                Waktu akan berjalan otomatis setelah Anda menekan tombol mulai.
-            </p>
-            <div class="alert-buttons">
-                <button class="btn-alert-primary">Mulai Ujian</button>
-                <button class="btn-alert-secondary">Nanti Saja</button>
+    <form id="attendanceForm" onsubmit="return handleSubmit(event)">
+        
+        <section class="card-summary">
+            <div class="status-item" data-type="hadir">
+                <svg><use href="#icon-check"></use></svg>
+                <span>Hadir</span>
             </div>
-        </div>
-    </div>
-</div>
+            <div class="status-item" data-type="sakit">
+                <svg><use href="#icon-plus"></use></svg>
+                <span>Sakit</span>
+            </div>
+            <div class="status-item" data-type="izin">
+                <svg><use href="#icon-info"></use></svg>
+                <span>Izin</span>
+            </div>
+            <div class="status-item" data-type="alfa">
+                <svg><use href="#icon-cross"></use></svg>
+                <span>Alfa</span>
+            </div>
+        </section>
+
+        <section class="card-note">
+            <label for="dailyNote">Catatan Harian Guru</label>
+            <textarea id="dailyNote" name="daily_note" placeholder="Tulis ringkasan materi atau catatan kejadian di kelas hari ini..." required></textarea>
+        </section>
+
+        <section class="card-table">
+            
+            <div class="table-row" id="row-1">
+                <span class="student-idx">1</span>
+                <span class="student-name">Aditya Pratama</span>
+                <div class="attendance-control">
+                    <button type="button" class="btn-trigger" onclick="toggleMenu('row-1')">
+                        <svg><use href="#icon-dots"></use></svg>
+                    </button>
+                    <div class="option-menu">
+                        <label class="option-item bg-hadir">
+                            <input type="radio" name="att_1" value="hadir" class="sr-only" onchange="updateStatus('row-1', 'hadir')">
+                            <svg><use href="#icon-check"></use></svg>
+                        </label>
+                        <label class="option-item bg-sakit">
+                            <input type="radio" name="att_1" value="sakit" class="sr-only" onchange="updateStatus('row-1', 'sakit')">
+                            <svg><use href="#icon-plus"></use></svg>
+                        </label>
+                        <label class="option-item bg-izin">
+                            <input type="radio" name="att_1" value="izin" class="sr-only" onchange="updateStatus('row-1', 'izin')">
+                            <svg><use href="#icon-info"></use></svg>
+                        </label>
+                        <label class="option-item bg-alfa">
+                            <input type="radio" name="att_1" value="alfa" class="sr-only" onchange="updateStatus('row-1', 'alfa')">
+                            <svg><use href="#icon-cross"></use></svg>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-row" id="row-2">
+                <span class="student-idx">2</span>
+                <span class="student-name">Bunga Citra Lestari</span>
+                <div class="attendance-control">
+                    <button type="button" class="btn-trigger" onclick="toggleMenu('row-2')">
+                        <svg><use href="#icon-dots"></use></svg>
+                    </button>
+                    <div class="option-menu">
+                        <label class="option-item bg-hadir"><input type="radio" name="att_2" value="hadir" class="sr-only" onchange="updateStatus('row-2', 'hadir')"><svg><use href="#icon-check"></use></svg></label>
+                        <label class="option-item bg-sakit"><input type="radio" name="att_2" value="sakit" class="sr-only" onchange="updateStatus('row-2', 'sakit')"><svg><use href="#icon-plus"></use></svg></label>
+                        <label class="option-item bg-izin"><input type="radio" name="att_2" value="izin" class="sr-only" onchange="updateStatus('row-2', 'izin')"><svg><use href="#icon-info"></use></svg></label>
+                        <label class="option-item bg-alfa"><input type="radio" name="att_2" value="alfa" class="sr-only" onchange="updateStatus('row-2', 'alfa')"><svg><use href="#icon-cross"></use></svg></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-row" id="row-3">
+                <span class="student-idx">3</span>
+                <span class="student-name">Chandra Wijaya</span>
+                <div class="attendance-control">
+                    <button type="button" class="btn-trigger" onclick="toggleMenu('row-3')">
+                        <svg><use href="#icon-dots"></use></svg>
+                    </button>
+                    <div class="option-menu">
+                        <label class="option-item bg-hadir"><input type="radio" name="att_3" value="hadir" class="sr-only" onchange="updateStatus('row-3', 'hadir')"><svg><use href="#icon-check"></use></svg></label>
+                        <label class="option-item bg-sakit"><input type="radio" name="att_3" value="sakit" class="sr-only" onchange="updateStatus('row-3', 'sakit')"><svg><use href="#icon-plus"></use></svg></label>
+                        <label class="option-item bg-izin"><input type="radio" name="att_3" value="izin" class="sr-only" onchange="updateStatus('row-3', 'izin')"><svg><use href="#icon-info"></use></svg></label>
+                        <label class="option-item bg-alfa"><input type="radio" name="att_3" value="alfa" class="sr-only" onchange="updateStatus('row-3', 'alfa')"><svg><use href="#icon-cross"></use></svg></label>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="card-count">
+            <div class="count-item">
+                <span class="count-val" id="count-hadir">0</span>
+                <span class="count-lbl">Hadir</span>
+            </div>
+            <div class="count-item">
+                <span class="count-val" id="count-sakit">0</span>
+                <span class="count-lbl">Sakit</span>
+            </div>
+            <div class="count-item">
+                <span class="count-val" id="count-izin">0</span>
+                <span class="count-lbl">Izin</span>
+            </div>
+            <div class="count-item">
+                <span class="count-val" id="count-alfa">0</span>
+                <span class="count-lbl">Alfa</span>
+            </div>
+        </section>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+            Mulai Kegiatan Belajar
+        </button>
+
+    </form>
+
+    <script>
+        // State Global untuk penghitungan
+        const stats = { hadir: 0, sakit: 0, izin: 0, alfa: 0 };
+        const icons = {
+            hadir: '#icon-check',
+            sakit: '#icon-plus',
+            izin: '#icon-info',
+            alfa: '#icon-cross',
+            default: '#icon-dots'
+        };
+
+        // 1. Toggle Menu Visibility
+        function toggleMenu(rowId) {
+            // Tutup semua menu lain terlebih dahulu
+            document.querySelectorAll('.option-menu').forEach(menu => {
+                if (menu.parentElement.parentElement.id !== rowId) {
+                    menu.classList.remove('active');
+                }
+            });
+
+            // Toggle menu target
+            const row = document.getElementById(rowId);
+            const menu = row.querySelector('.option-menu');
+            menu.classList.toggle('active');
+        }
+
+        // 2. Handle Status Selection
+        function updateStatus(rowId, status) {
+            const row = document.getElementById(rowId);
+            const triggerBtn = row.querySelector('.btn-trigger');
+            const menu = row.querySelector('.option-menu');
+            const svgUse = triggerBtn.querySelector('use');
+
+            // Cek status sebelumnya (jika ada) untuk update counter
+            const prevStatus = row.dataset.currentStatus;
+            if (prevStatus) {
+                stats[prevStatus]--;
+            }
+            
+            // Update State Baru
+            stats[status]++;
+            row.dataset.currentStatus = status;
+
+            // Update UI Trigger Button (Warna & Icon)
+            triggerBtn.className = `btn-trigger is-${status}`;
+            svgUse.setAttribute('href', icons[status]);
+
+            // Tutup Menu
+            menu.classList.remove('active');
+
+            // Refresh Summary Counts
+            refreshCounts();
+        }
+
+        // 3. Refresh Count Display
+        function refreshCounts() {
+            document.getElementById('count-hadir').textContent = stats.hadir;
+            document.getElementById('count-sakit').textContent = stats.sakit;
+            document.getElementById('count-izin').textContent = stats.izin;
+            document.getElementById('count-alfa').textContent = stats.alfa;
+        }
+
+        // 4. Close Menu on Outside Click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.attendance-control')) {
+                document.querySelectorAll('.option-menu').forEach(menu => {
+                    menu.classList.remove('active');
+                });
+            }
+        });
+
+        // 5. Submit Handler (Placeholder)
+        function handleSubmit(e) {
+            e.preventDefault();
+            // Validasi sederhana: pastikan minimal satu siswa diabsen (opsional)
+            const totalMarked = stats.hadir + stats.sakit + stats.izin + stats.alfa;
+            if(totalMarked === 0) {
+                alert("Mohon isi absensi siswa terlebih dahulu.");
+                return false;
+            }
+            alert("Data absensi & catatan siap dikirim!");
+            // Di sini logika fetch/ajax akan ditempatkan
+        }
+    </script>
+</body>
+</html>

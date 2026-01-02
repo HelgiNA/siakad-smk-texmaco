@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Absensi Kelas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="att-container">
+        
+        <form id="attendanceForm" class="att-form" action="/submit-attendance" method="POST">
+            
+            <section class="att-card att-summary-legend">
+                <div class="legend-item status-hadir">
+                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </span>
+                    <span class="legend-label">Hadir</span>
+                </div>
+                <div class="legend-item status-sakit">
+                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"></path></svg>
+                    </span>
+                    <span class="legend-label">Sakit</span>
+                </div>
+                <div class="legend-item status-izin">
+                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </span>
+                    <span class="legend-label">Izin</span>
+                </div>
+                <div class="legend-item status-alfa">
+                    <span class="legend-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </span>
+                    <span class="legend-label">Alfa</span>
+                </div>
+            </section>
+
+            <section class="att-card att-note-section">
+                <label for="dailyNote" class="att-label">Catatan Harian Guru</label>
+                <textarea id="dailyNote" name="daily_note" class="att-textarea" placeholder="Tulis catatan mengenai kegiatan belajar hari ini..." required></textarea>
+            </section>
+
+            <section class="att-card att-student-list-card">
+                <div class="att-list-header">
+                    <span>No</span>
+                    <span>Nama Siswa</span>
+                    <span class="text-right">Status</span>
+                </div>
+
+                <div class="att-list-wrapper" id="studentList">
+                    <div class="att-student-row" data-student-id="1">
+                        <div class="student-index">1</div>
+                        <div class="student-name">Ahmad Zulkarnain</div>
+                        
+                        <div class="att-control-area">
+                            <button type="button" class="att-trigger-btn" aria-label="Buka Opsi Absensi">
+                                <span class="dots">•••</span>
+                            </button>
+
+                            <div class="att-options-selector hidden">
+                                <label class="opt-item status-hadir">
+                                    <input type="radio" name="student[1][status]" value="hadir" class="visually-hidden">
+                                    <span class="opt-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    </span>
+                                </label>
+                                <label class="opt-item status-sakit">
+                                    <input type="radio" name="student[1][status]" value="sakit" class="visually-hidden">
+                                    <span class="opt-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"></path></svg>
+                                    </span>
+                                </label>
+                                <label class="opt-item status-izin">
+                                    <input type="radio" name="student[1][status]" value="izin" class="visually-hidden">
+                                    <span class="opt-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                    </span>
+                                </label>
+                                <label class="opt-item status-alfa">
+                                    <input type="radio" name="student[1][status]" value="alfa" class="visually-hidden">
+                                    <span class="opt-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="att-student-row" data-student-id="2">
+                        <div class="student-index">2</div>
+                        <div class="student-name">Budi Santoso</div>
+                        <div class="att-control-area">
+                            <button type="button" class="att-trigger-btn">
+                                <span class="dots">•••</span>
+                            </button>
+                            <div class="att-options-selector hidden">
+                                <label class="opt-item status-hadir"><input type="radio" name="student[2][status]" value="hadir" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></span></label>
+                                <label class="opt-item status-sakit"><input type="radio" name="student[2][status]" value="sakit" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 5v14M5 12h14"></path></svg></span></label>
+                                <label class="opt-item status-izin"><input type="radio" name="student[2][status]" value="izin" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span></label>
+                                <label class="opt-item status-alfa"><input type="radio" name="student[2][status]" value="alfa" class="visually-hidden"><span class="opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span></label>
+                            </div>
+                        </div>
+                    </div>
+                     </div>
+            </section>
+
+            <section class="att-card att-count-summary">
+                <div class="count-item">
+                    <span class="count-label">Hadir</span>
+                    <span class="count-val val-hadir" id="countHadir">0</span>
+                </div>
+                <div class="count-item">
+                    <span class="count-label">Sakit</span>
+                    <span class="count-val val-sakit" id="countSakit">0</span>
+                </div>
+                <div class="count-item">
+                    <span class="count-label">Izin</span>
+                    <span class="count-val val-izin" id="countIzin">0</span>
+                </div>
+                <div class="count-item">
+                    <span class="count-label">Alfa</span>
+                    <span class="count-val val-alfa" id="countAlfa">0</span>
+                </div>
+            </section>
+
+            <div class="att-action-area">
+                <button type="submit" class="btn-submit">Mulai Kegiatan Belajar</button>
+            </div>
+
+        </form>
+    </main>
+    
+    <script src="script.js"></script>
+</body>
+</html>

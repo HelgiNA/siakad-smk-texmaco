@@ -65,7 +65,7 @@ class AbsensiController extends Controller
         }
 
         if (!$jadwal) {
-            setAlert('info', 'Tidak ada jadwal mengajar untuk Anda hari ini.');
+            setAlert("info", "Tidak ada jadwal mengajar untuk Anda hari ini.");
         }
 
         $data = [
@@ -104,28 +104,30 @@ class AbsensiController extends Controller
         // Default values for form
         $absensiData = null;
         $detailsMap = [];
-
         if ($existing) {
-            if ($existing["status_validasi"] === "Rejected") {
-                // Allow edit. Load existing details to map status
-                $absensiData = $existing;
-                $existingDetails = Absensi::getDetails($existing["absensi_id"]);
-                foreach ($existingDetails as $d) {
-                    $detailsMap[$d["siswa_id"]] = $d["status_kehadiran"];
-                }
-                // Override catatan harian default with existing
-                $jadwal["catatan_harian_value"] = $existing["catatan_harian"];
-            } else {
-                // Prevent double input for Valid or Draft (Teacher should wait or ask admin to delete if Draft need edit?
-                // Or allow Draft edit too? For now, user only asked for Rejected revision flow.
-                $this->redirect("absensi/create")->with(
-                    "info",
-                    "Absensi sudah diinput. Status: " .
-                        $existing["status_validasi"]
-                );
-                exit();
-            }
+                    if (
+            $existing["status_validasi"] === "Valid" ||
+            $existing["status_validasi"] === "Draft"
+        ) {
+            $this->redirect("absensi/create")->with(
+                "info",
+                "Absensi sudah diinput. Status: " . $existing["status_validasi"]
+            );
+            exit();
         }
+
+        if ($existing["status_validasi"] === "Rejected") {
+            // Allow edit. Load existing details to map status
+            $absensiData = $existing;
+            $existingDetails = Absensi::getDetails($existing["absensi_id"]);
+            foreach ($existingDetails as $d) {
+                $detailsMap[$d["siswa_id"]] = $d["status_kehadiran"];
+            }
+            // Override catatan harian default with existing
+            $jadwal["catatan_harian_value"] = $existing["catatan_harian"];
+        }
+        }
+
 
         $data = [
             "title" =>

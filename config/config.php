@@ -11,27 +11,27 @@ define("BASE_URL", "http://localhost:8080");
 define("BASE_PATH", __DIR__ . "/..");
 
 define("ENUM", [
-  "STATUS" => [
-    "Belum Input" => "Belum Input",
-    "Valid" => "Valid",
-    "Draft" => "Draft",
-    "Rejected" => "Rejected",
-  ],
-  "STATUS_KEHADIRAN" => [
-    "Hadir" => "Hadir",
-    "Izin" => "Izin",
-    "Sakit" => "Sakit",
-    "Alpa" => "Alpa",
-  ],
-  "HARI" => [
-    "Sunday" => "Minggu",
-    "Monday" => "Senin",
-    "Tuesday" => "Selasa",
-    "Wednesday" => "Rabu",
-    "Thursday" => "Kamis",
-    "Friday" => "Jumat",
-    "Saturday" => "Sabtu",
-  ],
+    "STATUS" => [
+        "Belum Input" => "Belum Input",
+        "Valid" => "Valid",
+        "Draft" => "Draft",
+        "Rejected" => "Rejected",
+    ],
+    "STATUS_KEHADIRAN" => [
+        "Hadir" => "Hadir",
+        "Izin" => "Izin",
+        "Sakit" => "Sakit",
+        "Alpa" => "Alpa",
+    ],
+    "HARI" => [
+        "Sunday" => "Minggu",
+        "Monday" => "Senin",
+        "Tuesday" => "Selasa",
+        "Wednesday" => "Rabu",
+        "Thursday" => "Kamis",
+        "Friday" => "Jumat",
+        "Saturday" => "Sabtu",
+    ],
 ]);
 
 define("ADMIN_USERNAME", "admin");
@@ -45,7 +45,7 @@ define("GURU_PASSWORD", "guru");
 
 function dd($data)
 {
-  echo "<pre>";
-  die(var_dump($data));
-  echo "</pre>";
+    echo "<pre>";
+    die(var_dump($data));
+    echo "</pre>";
 }
