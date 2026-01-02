@@ -2,7 +2,6 @@
     // views/master/kelas/index.php
     ob_start();
 ?>
-
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Data Kelas</h3>
@@ -13,8 +12,8 @@
         </div>
     </div>
 
-    <div class="card-body p-0">
-        <table class="table table-striped table-hover">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-striped table-hover text-nowrap">
             <thead>
                 <tr>
                     <th style="width: 10px">#</th>

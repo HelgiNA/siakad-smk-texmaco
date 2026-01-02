@@ -64,6 +64,10 @@ class AbsensiController extends Controller
             $j["absensi_id"] = $existing ? $existing["absensi_id"] : null;
         }
 
+        if (!$jadwal) {
+            setAlert('info', 'Tidak ada jadwal mengajar untuk Anda hari ini.');
+        }
+
         $data = [
             "title" => "Input Absensi - " . $hariIni . ", " . date("d M Y"),
             "jadwal" => $jadwal,

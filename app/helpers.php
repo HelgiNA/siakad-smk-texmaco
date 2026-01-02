@@ -14,9 +14,19 @@ if (!function_exists("redirect")) {
                 $this->path = "/" . ltrim($path, "/");
             }
 
-            public function with($key, $message)
+            // Di dalam class anonim helper redirect()
+            public function with($type, $message, $title = null)
             {
-                $this->flash = ["type" => $key, "message" => $message];
+                // Jika title kosong, buat default berdasarkan tipe
+                if ($title === null) {
+                    $title = ucfirst($type) . "!";
+                }
+
+                $this->flash = [
+                    "type" => $type,
+                    "title" => $title,
+                    "message" => $message,
+                ];
                 return $this;
             }
 
@@ -70,5 +80,95 @@ if (!function_exists("abort")) {
 
         // 4. Matikan proses PHP seketika (penting!)
         exit();
+    }
+}
+
+if (!function_exists("setFlash")) {
+    /**
+     * Set pesan flash session.
+     * @param string $type success, info, warning, error, question
+     * @param string $title Judul flash (tebal)
+     * @param string $message Isi pesan
+     */
+    function setFlash($type, $message, $title = null)
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $_SESSION["flash"] = [
+            "type" => $type,
+            "title" => $title,
+            "message" => $message,
+        ];
+    }
+}
+
+if (!function_exists("showFlash")) {
+    /**
+     * Menampilkan komponen flash secara manual di View.
+     * Fungsi ini akan memuat file views/components/flash.php
+     */
+    function showFlash()
+    {
+        // Pastikan session aktif karena kita butuh akses $_SESSION
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Cek apakah ada flash data?
+        if (isset($_SESSION["flash"])) {
+            // Panggil file view flash yang sudah kita buat sebelumnya
+            $path = BASE_PATH . "/views/components/flash.php";
+
+            if (file_exists($path)) {
+                require $path;
+            }
+        }
+    }
+}
+
+if (!function_exists("setAlert")) {
+    /**
+     * Set pesan alert session.
+     * @param string $type success, info, warning, error, question
+     * @param string $title Judul alert (tebal)
+     * @param string $message Isi pesan
+     */
+    function setAlert($type, $message, $title = null)
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $_SESSION["alert"] = [
+            "type" => $type,
+            "title" => $title,
+            "message" => $message,
+        ];
+    }
+}
+
+if (!function_exists("showAlert")) {
+    /**
+     * Menampilkan komponen alert secara manual di View.
+     * Fungsi ini akan memuat file views/components/alert.php
+     */
+    function showAlert()
+    {
+        // Pastikan session aktif karena kita butuh akses $_SESSION
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Cek apakah ada flash data?
+        if (isset($_SESSION["alert"])) {
+            // Panggil file view alert yang sudah kita buat sebelumnya
+            $path = BASE_PATH . "/views/components/alert.php";
+
+            if (file_exists($path)) {
+                require $path;
+            }
+        }
     }
 }

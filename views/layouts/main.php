@@ -5,7 +5,8 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-    <title><?php echo APP_NAME . " | " . $title ?? 'Belum Terdefinisi'; ?></title>
+    <title><?php echo APP_NAME . " | " . $title ??
+        "Belum Terdefinisi"; ?></title>
     <!--begin::Accessibility Meta Tags-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <meta name="color-scheme" content="light dark" />
@@ -13,7 +14,8 @@
     <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
     <!--end::Accessibility Meta Tags-->
     <!--begin::Primary Meta Tags-->
-    <meta name="title" content="<?php echo APP_NAME . " | " . $title ?? 'Belum Terdefinisi'; ?>" />
+    <meta name="title" content="<?php echo APP_NAME . " | " . $title ??
+        "Belum Terdefinisi"; ?>" />
     <meta name="author" content="ColorlibHQ" />
     <meta name="description"
         content="AdminLTE is a Free Bootstrap 5 Admin Dashboard, 30 example pages using Vanilla JS. Fully accessible with WCAG 2.1 AA compliance." />
@@ -23,7 +25,7 @@
     <!--begin::Accessibility Features-->
     <!-- Skip links will be dynamically added by accessibility.js -->
     <meta name="supported-color-schemes" content="light dark" />
-    <link rel="preload" href="<?php echo BASE_URL ?>/public/css/adminlte.css" as="style" />
+    <link rel="preload" href="<?php echo BASE_URL; ?>/public/css/adminlte.css" as="style" />
     <!--end::Accessibility Features-->
     <!--begin::Fonts-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
@@ -39,7 +41,7 @@
         crossorigin="anonymous" />
     <!--end::Third Party Plugin(Bootstrap Icons)-->
     <!--begin::Required Plugin(AdminLTE)-->
-    <link rel="stylesheet" href="<?php echo BASE_URL ?>/public/css/adminlte.css" />
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/css/adminlte.css" />
     <!--end::Required Plugin(AdminLTE)-->
 </head>
 <!--end::Head-->
@@ -48,26 +50,27 @@
 
 <body class="sidebar-expand-lg sidebar-open bg-body-tertiary">
     <!--begin::Flash Message-->
-    <?php require_once __DIR__ . '/../partials/flash.php'; ?>
+<?php showFlash() ?>
     <!--end::Flash Message-->
 
     <!--begin::App Wrapper-->
     <div class="app-wrapper">
         <!--begin::Header-->
-        <?php require_once __DIR__ . '/../components/header.php'; ?>
+        <?php require_once __DIR__ . "/../partials/navbar.php"; ?>
         <!--end::Header-->
         <!--begin::Sidebar-->
         <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
             <!--begin::Sidebar Brand-->
             <div class="sidebar-brand">
                 <!--begin::Brand Link-->
-                <a href="<?php echo BASE_URL ?>/public/index.html" class="brand-link">
+                <a href="<?php echo BASE_URL; ?>/public/index.html" class="brand-link">
                     <!--begin::Brand Image-->
-                    <img src="<?php echo BASE_URL ?>/public/assets/img/AdminLTELogo.png" alt="AdminLTE Logo"
+                    <img src="<?php echo BASE_URL; ?>/public/assets/img/AdminLTELogo.png" alt="AdminLTE Logo"
                         class="brand-image opacity-75 shadow" />
                     <!--end::Brand Image-->
                     <!--begin::Brand Text-->
-                    <span class="brand-text fw-light">AdminLTE 4</span>
+                    <span class="brand-text fw-light"><small><?php echo APP_NAME ??
+                        "Belum Terdefinisi"; ?></small></span>
                     <!--end::Brand Text-->
                 </a>
                 <!--end::Brand Link-->
@@ -75,7 +78,7 @@
             <!--end::Sidebar Brand-->
             <!--begin::Sidebar Wrapper-->
             <div class="sidebar-wrapper">
-                <?php require_once __DIR__ . '/../components/navbar.php'; ?>
+                <?php require_once __DIR__ . "/../partials/sidebar.php"; ?>
             </div>
             <!--end::Sidebar Wrapper-->
         </aside>
@@ -89,13 +92,15 @@
                     <!--begin::Row-->
                     <div class="row">
                         <div class="col-sm-6">
-                            <h3 class="mb-0"><?php echo $title ?? 'Belum Terdefinisi'; ?></h3>
+                            <h3 class="mb-0"><?php echo $title ??
+                                "Belum Terdefinisi"; ?></h3>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-end">
                                 <li class="breadcrumb-item"><a href="#">Home</a></li>
                                 <li class="breadcrumb-item active" aria-current="page">
-                                    <?php echo $title ?? 'Belum Terdefinisi'; ?></li>
+                                    <?php echo $title ??
+                                        "Belum Terdefinisi"; ?></li>
                             </ol>
                         </div>
                     </div>
@@ -117,18 +122,7 @@
         </main>
         <!--end::App Main-->
         <!--begin::Footer-->
-        <footer class="app-footer">
-            <!--begin::To the end-->
-            <div class="float-end d-none d-sm-inline">Anything you want</div>
-            <!--end::To the end-->
-            <!--begin::Copyright-->
-            <strong>
-                Copyright &copy; 2014-2025&nbsp;
-                <a href="https://adminlte.io" class="text-decoration-none">AdminLTE.io</a>.
-            </strong>
-            All rights reserved.
-            <!--end::Copyright-->
-        </footer>
+        <?php require_once __DIR__ . "/../partials/footer.php"; ?>
         <!--end::Footer-->
     </div>
     <!--end::App Wrapper-->
@@ -146,7 +140,7 @@
     </script>
     <!--end::Required Plugin(Bootstrap 5)-->
     <!--begin::Required Plugin(AdminLTE)-->
-    <script src="<?php echo BASE_URL ?>/public/js/adminlte.js"></script>
+    <script src="<?php echo BASE_URL; ?>/public/js/adminlte.js"></script>
     <!--end::Required Plugin(AdminLTE)-->
     <!--begin::OverlayScrollbars Configure-->
     <script>

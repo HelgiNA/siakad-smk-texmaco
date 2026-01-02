@@ -15,19 +15,6 @@ class ValidasiController extends Controller
     // Dashboard for Validation
     public function index()
     {
-        // 1. Identify Guru
-        // Assuming role 'Guru' is needed
-        if ($_SESSION["role"] !== "Guru") {
-            // Or maybe Admin can see all? But logic is per class.
-            // For Admin, maybe redirect to a different view or show all?
-            // Let's stick to Wali Kelas logic first.
-            $this->redirect("dashboard")->with(
-                "error",
-                "Hanya Guru/Wali Kelas."
-            );
-            exit();
-        }
-
         $guru = Guru::findByUserId($_SESSION["user_id"]);
         if (!$guru) {
             $this->redirect("dashboard")->with(
@@ -40,6 +27,10 @@ class ValidasiController extends Controller
         // 2. Find Managed Class
         $kelas = Kelas::getByWaliKelas($guru["guru_id"]);
         if (!$kelas) {
+            setAlert(
+                "warning",
+                "Anda tidak terdaftar sebagai Wali Kelas untuk kelas manapun."
+            );
             // Not a wali kelas
             $this->view("akademik/validasi/index", [
                 "title" => "Validasi Absensi",
@@ -51,6 +42,12 @@ class ValidasiController extends Controller
 
         // 3. Get Pending Absensi
         $pending = Absensi::getPendingByKelas($kelas["kelas_id"]);
+        if (empty($pending)) {
+            setAlert(
+                "info",
+                "Tidak ada pengajuan absensi yang perlu divalidasi saat ini."
+            );
+        }
 
         $data = [
             "title" => "Validasi Absensi - Kelas " . $kelas["nama_kelas"],

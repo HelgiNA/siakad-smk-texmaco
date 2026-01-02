@@ -24,7 +24,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-bordered table-striped">
+            <table class="table table-bordered table-striped text-nowrap">
                 <thead>
                     <tr>
                         <th style="width: 10px">#</th>

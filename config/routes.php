@@ -298,17 +298,17 @@ $routes->post(
     ["auth", "role:Guru"]
 );
 
-// VALIDASI (Wali Kelas / Admin)
-$routes->get("/validasi", [ValidasiController::class, "index"], ["auth"]);
+// VALIDASI (Wali Kelas)
+$routes->get("/validasi", [ValidasiController::class, "index"], ["auth", "role:Guru"]);
 $routes->get(
     "/validasi/detail",
     [ValidasiController::class, "detail"],
-    ["auth", "role:Guru|Admin"]
+    ["auth", "role:Guru"]
 );
 $routes->post(
     "/validasi/approve",
     [ValidasiController::class, "approve"],
-    ["auth", "role:Guru|Admin"]
+    ["auth", "role:Guru"]
 );
 
 return $routes;
