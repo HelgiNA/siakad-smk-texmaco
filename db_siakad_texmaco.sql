@@ -212,7 +212,7 @@ INSERT INTO `mata_pelajaran` (`mapel_id`, `kode_mapel`, `nama_mapel`, `kelompok`
 --
 
 CREATE TABLE `nilai` (
-  `nilai_id` int(11) NOT NULL,
+  `nilai_id` int(11) NOT NULL AUTO_INCREMENT,
   `siswa_id` int(11) NOT NULL,
   `mapel_id` int(11) NOT NULL,
   `tahun_id` int(11) NOT NULL,
@@ -220,7 +220,12 @@ CREATE TABLE `nilai` (
   `nilai_uts` decimal(5,2) DEFAULT 0.00,
   `nilai_uas` decimal(5,2) DEFAULT 0.00,
   `nilai_akhir` decimal(5,2) DEFAULT 0.00 COMMENT 'Hasil kalkulasi otomatis',
-  `status_validasi` enum('Draft','Final') DEFAULT 'Draft'
+  `status_validasi` enum('Draft','Final') DEFAULT 'Draft',
+  PRIMARY KEY (`nilai_id`),
+  UNIQUE KEY `unique_nilai` (`siswa_id`, `mapel_id`, `tahun_id`),
+  FOREIGN KEY (`siswa_id`) REFERENCES `siswa` (`siswa_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`mapel_id`) REFERENCES `mata_pelajaran` (`mapel_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`tahun_id`) REFERENCES `tahun_ajaran` (`tahun_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci ROW_FORMAT=DYNAMIC;
 
 --
@@ -573,14 +578,6 @@ ALTER TABLE `jadwal_pelajaran`
 ALTER TABLE `kelas`
   ADD CONSTRAINT `kelas_ibfk_1` FOREIGN KEY (`guru_wali_id`) REFERENCES `guru` (`guru_id`),
   ADD CONSTRAINT `kelas_ibfk_2` FOREIGN KEY (`tahun_id`) REFERENCES `tahun_ajaran` (`tahun_id`);
-
---
--- Constraints for table `nilai`
---
-ALTER TABLE `nilai`
-  ADD CONSTRAINT `nilai_ibfk_1` FOREIGN KEY (`siswa_id`) REFERENCES `siswa` (`siswa_id`),
-  ADD CONSTRAINT `nilai_ibfk_2` FOREIGN KEY (`mapel_id`) REFERENCES `mata_pelajaran` (`mapel_id`),
-  ADD CONSTRAINT `nilai_ibfk_3` FOREIGN KEY (`tahun_id`) REFERENCES `tahun_ajaran` (`tahun_id`);
 
 --
 -- Constraints for table `riwayat_cetak`

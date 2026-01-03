@@ -7,6 +7,7 @@ use App\Controllers\HomeController;
 use App\Controllers\JadwalController;
 use App\Controllers\KelasController;
 use App\Controllers\MapelController;
+use App\Controllers\NilaiController;
 use App\Controllers\PlottingController;
 use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
@@ -317,6 +318,24 @@ $routes->get(
 $routes->post(
     "/validasi/approve",
     [ValidasiController::class, "approve"],
+    ["auth", "role:Guru"]
+);
+
+// FASE 4: INPUT NILAI AKADEMIK
+// Sequence SIA-006
+$routes->get(
+    "/nilai/create",
+    [NilaiController::class, "create"],
+    ["auth", "role:Guru"]
+);
+$routes->get(
+    "/nilai/input",
+    [NilaiController::class, "input"],
+    ["auth", "role:Guru"]
+);
+$routes->post(
+    "/nilai/store",
+    [NilaiController::class, "store"],
     ["auth", "role:Guru"]
 );
 
