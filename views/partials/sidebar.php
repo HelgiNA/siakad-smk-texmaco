@@ -106,6 +106,14 @@
                         <p>Validasi Kelas</p>
                     </a>
                 </li>
+                <?php if (isset($_SESSION['user']) && $_SESSION['user']['role'] === 'Guru') : ?>
+                <li class="nav-item">
+                    <a href="<?php echo BASE_URL; ?>/nilai/create" class="nav-link">
+                        <i class="nav-icon bi bi-pen-fill"></i>
+                        <p>Input Nilai</p>
+                    </a>
+                </li>
+                <?php endif; ?>
             </ul>
         </li>
     </ul>

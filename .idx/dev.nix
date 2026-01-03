@@ -1,16 +1,15 @@
-# To learn more about how to use Nix to configure your environment
-# see: https://firebase.google.com/docs/studio/customize-workspace
 { pkgs, ... }: {
-  # Which nixpkgs channel to use.
-  channel = "stable-24.05"; # or "unstable"
+  # Let Nix handle a few common Nix files for you
+  imports = [
+    # Automatically install extensions recommended by your colleagues
+    ./extensions.nix
+    # Automatically configure previews for your ports
+    ./previews.nix
+  ];
 
-  # Use https://search.nixos.org/packages to find packages
+  # The list of packages to make available in your workspace
   packages = [
-    # pkgs.go
-    # pkgs.python311
-    # pkgs.python311Packages.pip
-    # pkgs.nodejs_20
-    # pkgs.nodePackages.nodemon
+    pkgs.php82
   ];
 
   # Sets environment variables in the workspace
@@ -19,23 +18,18 @@
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
       # "vscodevim.vim"
+      "bmewburn.vscode-intelephense-client"
     ];
 
     # Enable previews
     previews = {
       enable = true;
-      previews = {
-        # web = {
-        #   # Example: run "npm run dev" with PORT set to IDX's defined port for previews,
-        #   # and show it in IDX's web preview panel
-        #   command = ["npm" "run" "dev"];
-        #   manager = "web";
-        #   env = {
-        #     # Environment variables to set for your server
-        #     PORT = "$PORT";
-        #   };
-        # };
-      };
+      previews = [{
+        # Example: run "npm run dev" with PORT set to IDX's defined port for previews,
+        # and show it in IDX's web preview panel
+        command = [ "php" "-S" "0.0.0.0:$PORT" ];
+        manager = "web";
+      }];
     };
 
     # Workspace lifecycle hooks

@@ -12,6 +12,7 @@ use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
 use App\Controllers\ValidasiController;
+use App\Controllers\NilaiController;
 use App\Core\Route;
 
 $routes = new Route();
@@ -310,5 +311,11 @@ $routes->post(
     [ValidasiController::class, "approve"],
     ["auth", "role:Guru"]
 );
+
+// FASE 4: INPUT NILAI AKADEMIK
+// Sequence SIA-006
+$routes->get('/nilai/create', [NilaiController::class, 'create'], ['auth', 'role:Guru']); // Pilih Kelas/Mapel
+$routes->get('/nilai/input', [NilaiController::class, 'input'], ['auth', 'role:Guru']);   // Form Grid Nilai
+$routes->post('/nilai/store', [NilaiController::class, 'store'], ['auth', 'role:Guru']);  // Hitung & Simpan
 
 return $routes;
