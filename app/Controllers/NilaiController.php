@@ -209,6 +209,15 @@ class NilaiController extends Controller
             return $this->redirect("nilai/create");
         }
 
+        // 1.5. SECURITY: Cek apakah ada nilai yang sudah dikunci (Final)
+        // Jika ada, guru tidak boleh edit lagi
+        foreach ($nilaiData as $siswa_id => $nilai) {
+            if (Nilai::isLocked($siswa_id, $mapel_id, $tahun_id)) {
+                setAlert("error", "Nilai sudah difinalisasi oleh Wali Kelas. Anda tidak bisa mengubahnya lagi. Hubungi Wali Kelas untuk revisi.");
+                return $this->redirect("nilai/create");
+            }
+        }
+
         // 2. Persiapkan data untuk batch save
         $dataBatch = [];
         foreach ($nilaiData as $siswa_id => $nilai) {

@@ -161,4 +161,81 @@ class Nilai extends Model
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Update status validasi nilai (untuk Wali Kelas)
+     * Status: Draft, Revisi, Final
+     */
+    public static function updateStatus($nilai_id, $status)
+    {
+        $instance = new static();
+        $query    = "UPDATE $instance->table 
+                    SET status_validasi = :status 
+                    WHERE nilai_id = :nilai_id";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
+        $stmt->bindParam(':nilai_id', $nilai_id, PDO::PARAM_INT);
+        
+        try {
+            $stmt->execute();
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Cek apakah nilai sudah dikunci (status = Final)
+     * Jika dikunci, Guru tidak bisa edit lagi
+     */
+    public static function isLocked($siswa_id, $mapel_id, $tahun_id)
+    {
+        $instance = new static();
+        $query    = "SELECT status_validasi FROM $instance->table 
+                    WHERE siswa_id = :siswa_id 
+                    AND mapel_id = :mapel_id 
+                    AND tahun_id = :tahun_id";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
+        $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
+        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result && $result['status_validasi'] === 'Final';
+    }
+
+    /**
+     * Ambil rekap nilai untuk Wali Kelas (per Kelas)
+     * Join: siswa, mapel, nilai untuk validasi
+     */
+    public static function getRekapByKelas($kelas_id, $tahun_id)
+    {
+        $instance = new static();
+        $query    = "SELECT
+                        n.*,
+                        s.nama_lengkap,
+                        s.nisn,
+                        m.nama_mapel,
+                        g.nama_guru
+                    FROM
+                        $instance->table n
+                        JOIN siswa s ON n.siswa_id = s.siswa_id
+                        JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+                        JOIN guru g ON m.guru_id = g.guru_id
+                    WHERE
+                        s.kelas_id = :kelas_id
+                        AND n.tahun_id = :tahun_id
+                    ORDER BY
+                        m.nama_mapel ASC,
+                        s.nama_lengkap ASC";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

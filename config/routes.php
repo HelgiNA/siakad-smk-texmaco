@@ -13,6 +13,7 @@ use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
 use App\Controllers\ValidasiController;
+use App\Controllers\ValidasiNilaiController;
 
 use App\Core\Route;
 
@@ -336,6 +337,19 @@ $routes->get(
 $routes->post(
     "/nilai/store",
     [NilaiController::class, "store"],
+    ["auth", "role:Guru"]
+);
+
+// FASE 4: VALIDASI NILAI AKADEMIK (Wali Kelas)
+// Sequence SIA-007
+$routes->get(
+    "/validasi-nilai",
+    [ValidasiNilaiController::class, "index"],
+    ["auth", "role:Guru"]
+);
+$routes->post(
+    "/validasi-nilai/proses",
+    [ValidasiNilaiController::class, "proses"],
     ["auth", "role:Guru"]
 );
 

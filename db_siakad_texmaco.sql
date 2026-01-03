@@ -220,7 +220,7 @@ CREATE TABLE `nilai` (
   `nilai_uts` decimal(5,2) DEFAULT 0.00,
   `nilai_uas` decimal(5,2) DEFAULT 0.00,
   `nilai_akhir` decimal(5,2) DEFAULT 0.00 COMMENT 'Hasil kalkulasi otomatis',
-  `status_validasi` enum('Draft','Final') DEFAULT 'Draft',
+  `status_validasi` enum('Draft','Revisi','Final') DEFAULT 'Draft',
   PRIMARY KEY (`nilai_id`),
   UNIQUE KEY `unique_nilai` (`siswa_id`, `mapel_id`, `tahun_id`),
   FOREIGN KEY (`siswa_id`) REFERENCES `siswa` (`siswa_id`) ON DELETE CASCADE,
