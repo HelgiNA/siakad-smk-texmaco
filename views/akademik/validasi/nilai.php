@@ -1,10 +1,9 @@
 <?php
 /**
- * PHASE 4: Validasi Nilai - Rekap Wali Kelas
+ * SIA-008 V2: Validasi Nilai - Rekap Wali Kelas
  * 
- * Wali Kelas melihat rekap nilai siswa di kelas ampuannya
- * Bisa approve (Final) atau tolak (Revisi)
- * Pre-check: Nilai tidak boleh 0 saat finalisasi
+ * Tampilkan HANYA nilai yang status = 'Submitted'
+ * Wali Kelas bisa approve (Final) atau reject (Revisi + Catatan Mandatory)
  */
 ?>
 
@@ -31,12 +30,12 @@
 
                     <!-- Alert Info -->
                     <div class="alert alert-info" role="alert">
-                        <strong>Catatan:</strong> 
-                        <ul>
-                            <li>Review nilai yang diinput guru mapel</li>
-                            <li>Jika ada nilai kosong (0), Anda tidak bisa finalisasi. Hubungi guru mapel.</li>
-                            <li>Status <strong>Final</strong>: Data terkunci, guru tidak bisa edit lagi</li>
-                            <li>Status <strong>Revisi</strong>: Guru akan melakukan perbaikan</li>
+                        <strong>SIA-008 V2 - Alur Validasi:</strong> 
+                        <ul class="mb-0">
+                            <li><strong>Data Ditampilkan:</strong> Hanya nilai dengan status "Submitted" (Draft tidak perlu validasi)</li>
+                            <li><strong>Tombol Setuju:</strong> Ubah status jadi "Final" (terkunci, siap rapor)</li>
+                            <li><strong>Tombol Revisi:</strong> Ubah status jadi "Revisi" + <strong>WAJIB</strong> isi catatan feedback</li>
+                            <li>Catatan akan dilihat Guru Mapel - mereka perlu tahu apa yang harus diperbaiki</li>
                         </ul>
                     </div>
 
@@ -46,22 +45,21 @@
                             <thead class="table-dark">
                                 <tr>
                                     <th width="5%">No</th>
-                                    <th width="20%">Nama Siswa</th>
-                                    <th width="15%">Mata Pelajaran</th>
+                                    <th width="15%">Nama Siswa</th>
+                                    <th width="12%">Mata Pelajaran</th>
                                     <th width="10%">Guru Mapel</th>
                                     <th width="8%">Tugas</th>
                                     <th width="8%">UTS</th>
                                     <th width="8%">UAS</th>
                                     <th width="10%">Nilai Akhir</th>
-                                    <th width="12%">Status</th>
-                                    <th width="20%">Aksi</th>
+                                    <th width="12%">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($nilai)): ?>
                                     <tr>
-                                        <td colspan="10" class="text-center text-muted">
-                                            <em>Belum ada data nilai untuk divalidasi</em>
+                                        <td colspan="9" class="text-center text-muted">
+                                            <em>✓ Tidak ada data nilai yang perlu divalidasi (Semua sudah disetujui atau belum ada pengajuan)</em>
                                         </td>
                                     </tr>
                                 <?php else: ?>
@@ -87,38 +85,67 @@
                                             <td class="text-center">
                                                 <strong><?php echo number_format($n['nilai_akhir'], 2); ?></strong>
                                             </td>
-                                            <td class="text-center">
-                                                <?php
-                                                $badgeClass = match($n['status_validasi']) {
-                                                    'Draft' => 'badge-warning',
-                                                    'Revisi' => 'badge-danger',
-                                                    'Final' => 'badge-success',
-                                                    default => 'badge-secondary'
-                                                };
-                                                ?>
-                                                <span class="badge <?php echo $badgeClass; ?>">
-                                                    <?php echo htmlspecialchars($n['status_validasi']); ?>
-                                                </span>
-                                            </td>
                                             <td>
-                                                <?php if ($n['status_validasi'] !== 'Final'): ?>
-                                                    <form method="POST" action="<?php echo BASE_URL; ?>/validasi-nilai/proses" style="display:inline;">
-                                                        <input type="hidden" name="nilai_id" value="<?php echo htmlspecialchars($n['nilai_id']); ?>">
-                                                        <input type="hidden" name="keputusan" value="Final">
-                                                        <button type="submit" class="btn btn-sm btn-success" title="Setujui Nilai">
-                                                            <i class="fas fa-check"></i> Setuju
-                                                        </button>
-                                                    </form>
-                                                    <form method="POST" action="<?php echo BASE_URL; ?>/validasi-nilai/proses" style="display:inline;">
-                                                        <input type="hidden" name="nilai_id" value="<?php echo htmlspecialchars($n['nilai_id']); ?>">
-                                                        <input type="hidden" name="keputusan" value="Revisi">
-                                                        <button type="submit" class="btn btn-sm btn-danger" title="Tolak dan minta revisi">
-                                                            <i class="fas fa-times"></i> Revisi
-                                                        </button>
-                                                    </form>
-                                                <?php else: ?>
-                                                    <span class="badge badge-success">Terkunci</span>
-                                                <?php endif; ?>
+                                                <!-- SIA-008 V2: Form Inline untuk Final -->
+                                                <form method="POST" action="<?php echo BASE_URL; ?>/validasi-nilai/proses" style="display:inline;" onsubmit="return confirm('Setujui nilai ini?');">
+                                                    <input type="hidden" name="nilai_id" value="<?php echo htmlspecialchars($n['nilai_id']); ?>">
+                                                    <input type="hidden" name="keputusan" value="Final">
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Setujui & Finalisasi">
+                                                        <i class="fas fa-check"></i> Setuju
+                                                    </button>
+                                                </form>
+                                                
+                                                <!-- SIA-008 V2: Modal trigger untuk Revisi (dengan catatan) -->
+                                                <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#modalRevisi<?php echo $n['nilai_id']; ?>" title="Tolak & minta revisi">
+                                                    <i class="fas fa-edit"></i> Revisi
+                                                </button>
+
+                                                <!-- Modal: Form Revisi dengan Catatan Mandatory -->
+                                                <div class="modal fade" id="modalRevisi<?php echo $n['nilai_id']; ?>" tabindex="-1" role="dialog">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header bg-warning text-white">
+                                                                <h5 class="modal-title">Catatan Revisi Nilai</h5>
+                                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <form method="POST" action="<?php echo BASE_URL; ?>/validasi-nilai/proses">
+                                                                <div class="modal-body">
+                                                                    <p><strong>Siswa:</strong> <?php echo htmlspecialchars($n['nama_lengkap']); ?></p>
+                                                                    <p><strong>Mapel:</strong> <?php echo htmlspecialchars($n['nama_mapel']); ?></p>
+                                                                    <p><strong>Guru:</strong> <?php echo htmlspecialchars($n['nama_guru']); ?></p>
+                                                                    
+                                                                    <div class="form-group">
+                                                                        <label for="catatan<?php echo $n['nilai_id']; ?>">
+                                                                            <strong>Catatan Revisi <span class="text-danger">*</span></strong>
+                                                                            <small class="d-block text-muted mt-1">
+                                                                                Berikan feedback spesifik untuk Guru Mapel. 
+                                                                                Contoh: "Nilai Si Budi masih 0, lengkapi terlebih dahulu"
+                                                                            </small>
+                                                                        </label>
+                                                                        <textarea 
+                                                                            class="form-control" 
+                                                                            id="catatan<?php echo $n['nilai_id']; ?>" 
+                                                                            name="catatan_revisi" 
+                                                                            rows="4" 
+                                                                            placeholder="Jelaskan apa yang perlu diperbaiki..."
+                                                                            required>
+                                                                        </textarea>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <input type="hidden" name="nilai_id" value="<?php echo htmlspecialchars($n['nilai_id']); ?>">
+                                                                    <input type="hidden" name="keputusan" value="Revisi">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                                                                    <button type="submit" class="btn btn-warning">
+                                                                        <i class="fas fa-times"></i> Tolak & Beri Catatan
+                                                                    </button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -156,3 +183,4 @@
         });
     });
 </script>
+

@@ -1,16 +1,22 @@
 <?php
 /**
- * FASE 2-3: Input Nilai - Form Matriks
+ * SIA-006 V2: Input Nilai - Form Matriks
  * 
  * Guru memilih kelas & mapel → tampilkan tabel siswa dengan input nilai
  * Guru isi nilai tugas, UTS, UAS → sistem hitung otomatis Nilai Akhir
- * Guru klik SIMPAN → validasi & simpan ke database
+ * 
+ * Alur:
+ * 1. "Simpan Draft" → Status='Draft', Form tetap editable
+ * 2. "Ajukan Validasi" → Check kelengkapan → Status='Submitted', Form read-only
+ * 3. Jika ditolak Wali → Status='Revisi', Form editable kembali + tampil catatan
  * 
  * Logic View:
  * - Baris = Nama Siswa
  * - Kolom = Input Tugas, Input UTS, Input UAS, Nilai Akhir (readonly, dihitung saat submit)
  * - Jika data nilai sudah ada, isi input dengan data yang ada
  * - Jika belum ada, isi 0
+ * - Jika status='Submitted' atau 'Final': Form READ-ONLY
+ * - Jika status='Revisi': Form editable + tampil catatan feedback
  */
 ?>
 
@@ -28,6 +34,40 @@
                 </div>
 
                 <div class="card-body">
+                    <!-- SIA-006 V2: Alert Catatan Revisi (jika ada feedback dari Wali) -->
+                    <?php
+                    // Cek apakah ada nilai dengan status 'Revisi' dan catatan revisi
+                    $hasRevisi = false;
+                    $catatanRevisi = [];
+                    if (!empty($nilaiMap)) {
+                        foreach ($nilaiMap as $n) {
+                            if ($n['status_validasi'] === 'Revisi' && !empty($n['catatan_revisi'])) {
+                                $hasRevisi = true;
+                                $catatanRevisi[] = $n;
+                            }
+                        }
+                    }
+                    ?>
+                    
+                    <?php if ($hasRevisi): ?>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <h5><i class="fas fa-exclamation-circle"></i> Catatan dari Wali Kelas</h5>
+                            <p>Nilai Anda ditolak dan perlu diperbaiki. Berikut adalah feedback dari Wali Kelas:</p>
+                            <ul>
+                                <?php foreach ($catatanRevisi as $c): ?>
+                                    <li><strong><?php echo htmlspecialchars($c['nama_lengkap']); ?>:</strong> 
+                                        <?php echo nl2br(htmlspecialchars($c['catatan_revisi'])); ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <p class="mb-0"><em>Silakan perbaiki nilai dan ajukan kembali.</em></p>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Form -->
                     <form method="POST" action="<?php echo BASE_URL; ?>/nilai/store" id="formNilai">
                         <!-- Hidden fields -->
                         <input type="hidden" name="kelas_id" value="<?php echo htmlspecialchars($kelas_id); ?>">
@@ -82,7 +122,7 @@
                                             </td>
                                         </tr>
                                     <?php else: ?>
-                                        <?php $no = 1; foreach ($siswa as $s): 
+                                        <?php $no = 1; foreach ($siswa as $s):
                                             // Cek apakah siswa ini sudah punya nilai
                                             $existing = isset($nilaiMap[$s['siswa_id']]) ? $nilaiMap[$s['siswa_id']] : null;
                                             $tugas = $existing ? $existing['nilai_tugas'] : 0;
@@ -157,8 +197,9 @@
                             <ul class="mb-0">
                                 <li>Preview Nilai Akhir dihitung secara realtime (Client-side preview saja)</li>
                                 <li>Nilai final akan dihitung ulang di Server sebelum disimpan (untuk keamanan)</li>
-                                <li>Status awal simpanan adalah <strong>Draft</strong> - Anda masih bisa mengubahnya nanti</li>
-                                <li>Hanya masukkan nilai dalam range 0-100 untuk setiap komponen</li>
+                                <li><strong>Simpan Draft:</strong> Form tetap editable. Nilai masih privat (Wali Kelas tidak lihat)</li>
+                                <li><strong>Ajukan Validasi:</strong> Lock form. Wali Kelas bisa review + approve/reject</li>
+                                <li>Jika status ada nilai masih 0, sistem akan menolak pengajuan</li>
                             </ul>
                         </div>
 
@@ -166,9 +207,32 @@
                 </div>
 
                 <div class="card-footer">
-                    <button type="submit" form="formNilai" class="btn btn-success">
-                        <i class="fas fa-save"></i> Simpan Nilai (Draft)
-                    </button>
+                    <?php
+                    // SIA-006 V2: Tentukan status form (Draft vs Submitted)
+                    $formLocked = false;
+                    if (!empty($nilaiMap)) {
+                        $statusCheck = array_unique(array_column($nilaiMap, 'status_validasi'));
+                        if (count($statusCheck) === 1 && in_array($statusCheck[0], ['Submitted', 'Final'])) {
+                            $formLocked = true;
+                        }
+                    }
+                    ?>
+
+                    <?php if (!$formLocked): ?>
+                        <!-- SIA-006 V2: Mode Draft - Dua tombol -->
+                        <button type="submit" form="formNilai" name="action" value="draft" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Simpan Draft
+                        </button>
+                        <button type="submit" form="formNilai" name="action" value="submit" class="btn btn-warning" onclick="return confirm('Setelah diajukan, form akan terkunci. Pastikan semua nilai lengkap. Lanjutkan?')">
+                            <i class="fas fa-check-square"></i> Ajukan ke Wali Kelas
+                        </button>
+                    <?php else: ?>
+                        <!-- SIA-006 V2: Mode Submitted/Final - Form read-only -->
+                        <div class="alert alert-warning mb-0">
+                            <i class="fas fa-lock"></i> <strong>Form Terkunci</strong> - Status nilai sudah Submitted. Menunggu validasi Wali Kelas.
+                        </div>
+                    <?php endif; ?>
+                    
                     <a href="<?php echo BASE_URL; ?>/nilai/create" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Batalkan
                     </a>

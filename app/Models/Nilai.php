@@ -239,4 +239,101 @@ class Nilai extends Model
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Ambil nilai dengan filter status tertentu (SIA-008 V2)
+     * Untuk Wali Kelas: hanya tampilkan status 'Submitted'
+     */
+    public static function getByStatus($kelas_id, $tahun_id, $status = 'Submitted')
+    {
+        $instance = new static();
+        $query    = "SELECT
+                        n.*,
+                        s.nama_lengkap,
+                        s.nisn,
+                        m.nama_mapel,
+                        g.nama_guru
+                    FROM
+                        $instance->table n
+                        JOIN siswa s ON n.siswa_id = s.siswa_id
+                        JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+                        JOIN guru g ON m.guru_id = g.guru_id
+                    WHERE
+                        s.kelas_id = :kelas_id
+                        AND n.tahun_id = :tahun_id
+                        AND n.status_validasi = :status
+                    ORDER BY
+                        m.nama_mapel ASC,
+                        s.nama_lengkap ASC";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Update status + catatan revisi (SIA-008 V2)
+     * Digunakan oleh Wali Kelas saat memberikan feedback revisi
+     */
+    public static function updateStatusWithNote($nilai_id, $status, $catatan = null)
+    {
+        $instance = new static();
+        
+        if ($status === 'Revisi' && empty($catatan)) {
+            return [
+                'status'  => false,
+                'message' => 'Catatan revisi wajib diisi jika menolak!'
+            ];
+        }
+
+        $query = "UPDATE $instance->table 
+                 SET status_validasi = :status, 
+                     catatan_revisi = :catatan
+                 WHERE nilai_id = :nilai_id";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
+        $stmt->bindParam(':catatan', $catatan, PDO::PARAM_STR);
+        $stmt->bindParam(':nilai_id', $nilai_id, PDO::PARAM_INT);
+        
+        try {
+            $stmt->execute();
+            return [
+                'status'  => true,
+                'message' => 'Status berhasil diupdate'
+            ];
+        } catch (PDOException $e) {
+            return [
+                'status'  => false,
+                'message' => 'Database error: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Cek apakah nilai dalam kelas sudah ada yang status 'Submitted' atau 'Final'
+     * Digunakan untuk validasi: Guru tidak bisa submit kalau ada yang sudah Submitted
+     */
+    public static function hasSubmittedOrFinal($kelas_id, $mapel_id, $tahun_id)
+    {
+        $instance = new static();
+        $query    = "SELECT COUNT(*) as cnt FROM $instance->table n
+                    JOIN siswa s ON n.siswa_id = s.siswa_id
+                    WHERE s.kelas_id = :kelas_id
+                    AND n.mapel_id = :mapel_id
+                    AND n.tahun_id = :tahun_id
+                    AND n.status_validasi IN ('Submitted', 'Final')";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
+        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['cnt'] > 0;
+    }
 }

@@ -167,13 +167,15 @@ class NilaiController extends Controller
     }
 
     /**
-     * FASE 3 & 4: Validasi, Kalkulasi & Simpan (UPSERT)
+     * FASE 3: Simpan Draft (SIA-006 V2)
      * 
      * Guru submit form → server:
      * 1. Validasi range nilai (0-100)
      * 2. Kalkulasi Nilai Akhir = (Tugas*20%) + (UTS*30%) + (UAS*50%)
-     * 3. UPSERT ke database (update jika ada, insert jika baru)
-     * 4. Set status_validasi = 'Draft' (belum finalisasi)
+     * 3. UPSERT ke database dengan status = 'Draft'
+     * 4. Form tetap EDITABLE sampai Guru klik "Ajukan Validasi"
+     * 
+     * SIA-006 V2: Jika action='submit', setelah simpan langsung proses submission
      */
     public function store()
     {
@@ -181,6 +183,7 @@ class NilaiController extends Controller
         $kelas_id = $_POST["kelas_id"] ?? null;
         $mapel_id = $_POST["mapel_id"] ?? null;
         $tahun_id = $_POST["tahun_id"] ?? null;
+        $action   = $_POST["action"] ?? "draft";  // NEW: pilih action (draft/submit)
 
         // Ambil array nilai per siswa dari form
         // Format: nilai[siswa_id] = ['tugas' => x, 'uts' => y, 'uas' => z]
@@ -209,8 +212,9 @@ class NilaiController extends Controller
             return $this->redirect("nilai/create");
         }
 
-        // 1.5. SECURITY: Cek apakah ada nilai yang sudah dikunci (Final)
-        // Jika ada, guru tidak boleh edit lagi
+        // 1.5. SECURITY: Cek apakah ada nilai yang sudah dikunci (Final/Submitted)
+        // Jika Final: guru tidak boleh edit
+        // Jika Submitted: guru tidak boleh edit (harus Revisi dulu)
         foreach ($nilaiData as $siswa_id => $nilai) {
             if (Nilai::isLocked($siswa_id, $mapel_id, $tahun_id)) {
                 setAlert("error", "Nilai sudah difinalisasi oleh Wali Kelas. Anda tidak bisa mengubahnya lagi. Hubungi Wali Kelas untuk revisi.");
@@ -251,16 +255,71 @@ class NilaiController extends Controller
         }
 
         // 3. Simpan batch ke database (dengan UPSERT)
+        // Status = 'Draft' (form tetap editable)
         $result = Nilai::saveBatch($dataBatch);
 
         if ($result['status']) {
-            setAlert("success", "Nilai berhasil disimpan dengan status Draft. Anda masih bisa mengubahnya nanti.");
+            // SIA-006 V2: Jika action=submit, langsung proses pengajuan
+            if ($action === 'submit') {
+                return $this->submitToWali($kelas_id, $mapel_id, $tahun_id);
+            }
+
+            setAlert("success", "Nilai berhasil disimpan (Draft). Anda masih bisa mengubahnya.");
             return $this->redirect("nilai/create");
         } else {
             setAlert("error", $result['message']);
             return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
         }
     }
+
+    /**
+     * Helper: Submit ke Wali Kelas (SIA-006 V2)
+     * Dipanggil dari store() ketika action='submit'
+     */
+    private function submitToWali($kelas_id, $mapel_id, $tahun_id)
+    {
+        // Ambil semua nilai untuk kelas/mapel/tahun ini
+        $nilaiList = Nilai::getByKelasMapel($kelas_id, $mapel_id, $tahun_id);
+
+        if (empty($nilaiList)) {
+            setAlert("error", "Belum ada data nilai yang disimpan. Silakan isi nilai terlebih dahulu.");
+            return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
+        }
+
+        // Cek apakah ada nilai yang masih 0
+        foreach ($nilaiList as $n) {
+            if ($n['nilai_tugas'] == 0 || $n['nilai_uts'] == 0 || $n['nilai_uas'] == 0) {
+                setAlert("error", "Ada nilai yang masih kosong/0. Lengkapi data sebelum mengajukan: " . htmlspecialchars($n['nama_lengkap']));
+                return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
+            }
+        }
+
+        // Update semua nilai jadi status 'Submitted' (hanya yang Draft)
+        $instance = new Nilai();
+        $query = "UPDATE nilai 
+                 SET status_validasi = 'Submitted'
+                 WHERE siswa_id IN (
+                    SELECT siswa_id FROM siswa WHERE kelas_id = :kelas_id
+                 )
+                 AND mapel_id = :mapel_id
+                 AND tahun_id = :tahun_id
+                 AND status_validasi = 'Draft'";
+
+        try {
+            $stmt = $instance->conn->prepare($query);
+            $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
+            $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
+            $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            setAlert("success", "✓ Nilai berhasil diajukan ke Wali Kelas! Form terkunci menunggu validasi.");
+            return $this->redirect("nilai/create");
+        } catch (PDOException $e) {
+            setAlert("error", "Gagal mengajukan nilai: " . $e->getMessage());
+            return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
+        }
+    }
+
 
     /**
      * Helper: Validasi apakah nilai dalam range yang valid

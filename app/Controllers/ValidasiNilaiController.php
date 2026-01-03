@@ -15,12 +15,12 @@ use App\Models\Kelas;
 class ValidasiNilaiController extends Controller
 {
     /**
-     * PHASE 4: Validasi Nilai Akademik (Wali Kelas)
+     * SIA-008 V2: Validasi Nilai Akademik (Wali Kelas)
      * 
-     * Tampilkan rekap nilai siswa di kelas ampuan
-     * Wali Kelas bisa approve (Final) atau reject (Revisi)
+     * Tampilkan HANYA nilai yang status = 'Submitted'
+     * (Data 'Draft' tidak perlu divalidasi, itu privasi Guru Mapel)
      * 
-     * Pre-check: Nilai tidak boleh 0 saat finalisasi
+     * Wali Kelas bisa approve (Final) atau reject (Revisi + Catatan)
      */
     public function index()
     {
@@ -38,17 +38,16 @@ class ValidasiNilaiController extends Controller
             return $this->redirect("dashboard");
         }
 
-        // 3. Cek apakah guru ini adalah Wali Kelas (check di database)
-        // Asumsi: Ada column kelas_wali_id di table guru
-        // Jika belum ada, sesuaikan dengan struktur database Anda
+        // 3. Cek apakah guru ini adalah Wali Kelas
         $kelas = Kelas::find($guru['kelas_wali_id'] ?? null);
         if (!$kelas) {
             setAlert("error", "Anda tidak ditunjuk sebagai Wali Kelas.");
             return $this->redirect("dashboard");
         }
 
-        // 4. Ambil rekap nilai untuk kelas ini
-        $nilai = Nilai::getRekapByKelas($kelas['kelas_id'], $activeTahun['tahun_id']);
+        // 4. Ambil HANYA nilai dengan status 'Submitted' (SIA-008 V2 - Filter Data)
+        // Draft tidak perlu ditampilkan, masih privasi guru
+        $nilai = Nilai::getByStatus($kelas['kelas_id'], $activeTahun['tahun_id'], 'Submitted');
 
         // 5. Render view
         return $this->render('akademik/validasi/nilai', [
@@ -59,13 +58,13 @@ class ValidasiNilaiController extends Controller
     }
 
     /**
-     * Proses validasi: terima (Final) atau tolak (Revisi)
+     * SIA-008 V2: Proses Validasi dengan Catatan Revisi
      * 
      * POST /validasi-nilai/proses
      * Params: 
      *   - nilai_id: ID nilai yang divalidasi
      *   - keputusan: 'Final' atau 'Revisi'
-     *   - catatan: (optional) keterangan revisi
+     *   - catatan_revisi: (MANDATORY jika Revisi) feedback untuk guru
      */
     public function proses()
     {
@@ -77,8 +76,9 @@ class ValidasiNilaiController extends Controller
         }
 
         // 2. Validasi input
-        $nilai_id  = $_POST['nilai_id'] ?? null;
-        $keputusan = $_POST['keputusan'] ?? null;
+        $nilai_id      = $_POST['nilai_id'] ?? null;
+        $keputusan     = $_POST['keputusan'] ?? null;
+        $catatan_revisi = $_POST['catatan_revisi'] ?? null;
 
         if (!$nilai_id || !in_array($keputusan, ['Final', 'Revisi'])) {
             setAlert("error", "Input tidak valid.");
@@ -96,23 +96,31 @@ class ValidasiNilaiController extends Controller
         if ($keputusan === 'Final') {
             if ($nilai['nilai_tugas'] == 0 || $nilai['nilai_uts'] == 0 || $nilai['nilai_uas'] == 0) {
                 setAlert("error", "Tidak bisa finalisasi: Ada nilai yang masih kosong (0).");
-                return $this->redirect("dashboard");
+                return $this->redirect("validasi-nilai");
             }
         }
 
-        // 5. Update status validasi
-        $result = Nilai::updateStatus($nilai_id, $keputusan);
-
-        if ($result) {
-            $msg = $keputusan === 'Final' 
-                ? "Nilai berhasil disetujui (Final)."
-                : "Nilai ditolak. Guru akan melakukan revisi.";
-            
-            setAlert("success", $msg);
-        } else {
-            setAlert("error", "Gagal mengupdate status validasi.");
+        // 5. PRE-CHECK: Jika keputusan = 'Revisi', catatan WAJIB ada
+        if ($keputusan === 'Revisi' && empty($catatan_revisi)) {
+            setAlert("error", "Catatan revisi wajib diisi saat menolak.");
+            return $this->redirect("validasi-nilai");
         }
 
-        return $this->redirect("akademik/validasi");
+        // 6. Update status + catatan revisi (SIA-008 V2)
+        $result = Nilai::updateStatusWithNote($nilai_id, $keputusan, $catatan_revisi);
+
+        if ($result['status']) {
+            if ($keputusan === 'Final') {
+                $msg = "Nilai berhasil disetujui (Final). Data terkunci.";
+            } else {
+                $msg = "Nilai ditolak (Revisi). Guru akan melihat catatan Anda.";
+            }
+            setAlert("success", $msg);
+        } else {
+            setAlert("error", $result['message']);
+        }
+
+        return $this->redirect("validasi-nilai");
     }
 }
+

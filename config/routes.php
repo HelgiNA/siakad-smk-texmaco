@@ -323,7 +323,7 @@ $routes->post(
 );
 
 // FASE 4: INPUT NILAI AKADEMIK
-// Sequence SIA-006
+// Sequence SIA-006 (V2 - Draft + Submission)
 $routes->get(
     "/nilai/create",
     [NilaiController::class, "create"],
@@ -338,6 +338,7 @@ $routes->post(
     "/nilai/store",
     [NilaiController::class, "store"],
     ["auth", "role:Guru"]
+);
 );
 
 // FASE 4: VALIDASI NILAI AKADEMIK (Wali Kelas)
