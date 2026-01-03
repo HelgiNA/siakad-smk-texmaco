@@ -1,6 +1,8 @@
 <?php
 
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once "app/Core/Database.php";
 require_once "app/Core/Route.php";

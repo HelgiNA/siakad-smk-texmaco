@@ -1,8 +1,6 @@
-wew<?php
+<?php
 // app/Models/Jadwal.php
 namespace App\Models;
-
-require_once __DIR__ . '/Model.php';
 
 use PDO;
 
