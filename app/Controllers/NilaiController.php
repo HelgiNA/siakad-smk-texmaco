@@ -1,75 +1,37 @@
-
 <?php
 
 namespace App\Controllers;
 
-require_once __DIR__ . '/Controller.php';
-require_once __DIR__ . '/../Models/Jadwal.php';
-require_once __DIR__ . '/../Models/TahunAjaran.php';
-require_once __DIR__ . '/../Models/Siswa.php';
-require_once __DIR__ . '/../Models/Nilai.php';
-require_once __DIR__ . '/../Models/Kelas.php';
-require_once __DIR__ . '/../Models/Mapel.php';
-
 use App\Models\Jadwal;
 use App\Models\Kelas;
-use App\Models\Mapel;
 use App\Models\Nilai;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
 
 class NilaiController extends Controller
 {
-    public function __construct()
-    {
-        if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'Guru') {
-            $this->redirect('/dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
-            exit;
-        }
-    }
-
     public function create()
     {
-        $guru_id = $_SESSION['user']['guru_id'];
-        
-        if (!isset($_SESSION['tahun_ajaran_aktif'])) {
-            $this->redirect('/dashboard')->with('error', 'Tidak ada tahun ajaran yang aktif saat ini.');
-            return;
-        }
-        
-        $tahun_id = $_SESSION['tahun_ajaran_aktif']['tahun_id'];
+        $guru_id = $this->request->session('user_id');
+        $tahun_ajaran_aktif = TahunAjaran::getActive();
+        $jadwal = Jadwal::findByGuru($guru_id, $tahun_ajaran_aktif['id']);
 
         $this->view('nilai/create', [
-            'title' => 'Input Nilai - Pilih Kelas & Mata Pelajaran',
-            'jadwal' => Jadwal::getKelasMapelByGuru($guru_id, $tahun_id)
+            'jadwal' => $jadwal
         ]);
     }
 
     public function input()
     {
-        if (!isset($_GET['kelas_id']) || !isset($_GET['mapel_id'])) {
-            $this->redirect('/nilai/create')->with('error', 'Parameter kelas atau mata pelajaran tidak valid.');
-            return;
-        }
+        $kelas_id = $this->request->get('kelas_id');
+        $mapel_id = $this->request->get('mapel_id');
 
-        $kelas_id = $_GET['kelas_id'];
-        $mapel_id = $_GET['mapel_id'];
-        $tahun_id = $_SESSION['tahun_ajaran_aktif']['tahun_id'];
+        $siswa = Siswa::getByKelas($kelas_id);
+        $nilai = Nilai::getByKelasMapel($kelas_id, $mapel_id);
 
-        $kelas = Kelas::find($kelas_id);
-        $mapel = Mapel::find($mapel_id);
-
-        if (!$kelas || !$mapel) {
-            $this->redirect('/nilai/create')->with('error', 'Data kelas atau mapel tidak ditemukan.');
-            return;
-        }
-        
         $this->view('nilai/input', [
-            'title' => "Input Nilai - " . $kelas['nama_kelas'] . " - " . $mapel['nama_mapel'],
-            'kelas' => $kelas,
-            'mapel' => $mapel,
-            'siswa' => Siswa::getByKelas($kelas_id),
-            'nilai' => Nilai::getByKelasMapel($kelas_id, $mapel_id, $tahun_id),
+            'siswa' => $siswa,
+            'nilai' => $nilai,
             'kelas_id' => $kelas_id,
             'mapel_id' => $mapel_id
         ]);
@@ -77,32 +39,30 @@ class NilaiController extends Controller
 
     public function store()
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('/');
-            return;
-        }
+        $data = $this->request->post();
+        $nilai = [];
 
-        $kelas_id = $_POST['kelas_id'];
-        $mapel_id = $_POST['mapel_id'];
-        $tahun_id = $_POST['tahun_id'];
-        $nilaiData = $_POST['nilai'];
+        foreach ($data['nilai'] as $siswa_id => $row) {
+            if ($row['tugas'] < 0 || $row['tugas'] > 100 ||
+                $row['uts'] < 0 || $row['uts'] > 100 ||
+                $row['uas'] < 0 || $row['uas'] > 100) {
+                return $this->redirect('/nilai/create')->with('error', 'Nilai harus di antara 0 dan 100.');
+            }
 
-        $dataToSave = [];
-        foreach ($nilaiData as $siswa_id => $nilai) {
-            $dataToSave[] = [
+            $nilai[] = [
                 'siswa_id' => $siswa_id,
-                'mapel_id' => $mapel_id,
-                'tahun_id' => $tahun_id,
-                'tugas'    => !empty($nilai['tugas']) ? $nilai['tugas'] : 0,
-                'uts'      => !empty($nilai['uts']) ? $nilai['uts'] : 0,
-                'uas'      => !empty($nilai['uas']) ? $nilai['uas'] : 0,
+                'mapel_id' => $data['mapel_id'],
+                'tahun_id' => TahunAjaran::getActive()['id'],
+                'tugas' => $row['tugas'],
+                'uts' => $row['uts'],
+                'uas' => $row['uas'],
             ];
         }
 
-        if (Nilai::saveBatch($dataToSave)) {
-            $this->redirect("/nilai/input?kelas_id={$kelas_id}&mapel_id={$mapel_id}")->with('success', 'Nilai berhasil disimpan.');
+        if (Nilai::saveBatch($nilai)) {
+            return $this->redirect('/nilai/create')->with('success', 'Nilai berhasil disimpan.');
         } else {
-            $this->redirect("/nilai/input?kelas_id={$kelas_id}&mapel_id={$mapel_id}")->with('error', 'Gagal menyimpan nilai.');
+            return $this->redirect('/nilai/create')->with('error', 'Gagal menyimpan nilai.');
         }
     }
 }

@@ -63,7 +63,7 @@ $routes->get(
     ["auth", "role:Admin"]
 );
 
-// MANAJEMEN SISWA
+// MANAJENEN SISWA
 $routes->get(
     "/siswa",
     [SiswaController::class, "index"],
@@ -317,5 +317,6 @@ $routes->post(
 $routes->get('/nilai/create', [NilaiController::class, 'create'], ['auth', 'role:Guru']); // Pilih Kelas/Mapel
 $routes->get('/nilai/input', [NilaiController::class, 'input'], ['auth', 'role:Guru']);   // Form Grid Nilai
 $routes->post('/nilai/store', [NilaiController::class, 'store'], ['auth', 'role:Guru']);  // Hitung & Simpan
+
 
 return $routes;

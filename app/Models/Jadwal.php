@@ -1,4 +1,4 @@
-<?php
+wew<?php
 // app/Models/Jadwal.php
 namespace App\Models;
 
@@ -32,6 +32,24 @@ class Jadwal extends Model
             ':guru_id'  => $guru_id,
             ':hari'     => $hari,
             ':tahun_id' => $tahun_id,
+        ]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function findByGuru($guru_id, $tahun_id)
+    {
+        $instance = new static();
+        $query = "SELECT DISTINCT j.kelas_id, k.nama_kelas, j.mapel_id, m.nama_mapel
+                    FROM " . $instance->table . " j
+                    JOIN kelas k ON j.kelas_id = k.kelas_id
+                    JOIN mata_pelajaran m ON j.mapel_id = m.mapel_id
+                    WHERE j.guru_id = :guru_id AND j.tahun_id = :tahun_id
+                    ORDER BY k.nama_kelas, m.nama_mapel";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute([
+            ':guru_id'  => $guru_id,
+            ':tahun_id' => $tahun_id
         ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
