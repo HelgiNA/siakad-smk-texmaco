@@ -19,7 +19,7 @@
 </head>
 
 <body class="hold-transition login-page">
-    <?php require_once __DIR__ . '/../partials/flash.php'; ?>
+<?php showFlash() ?>
     <?php echo $content; ?>
     <script src="<?php echo BASE_URL ?>/public/js/adminlte.min.js"></script>
 </body>

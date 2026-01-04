@@ -24,8 +24,7 @@ class Siswa extends Model
                             JOIN users u ON $instance->table.user_id = u.user_id
                             LEFT JOIN kelas k ON $instance->table.kelas_id = k.kelas_id
                         ORDER BY
-                            $instance->table.kelas_id ASC,
-                            $instance->table.nama_lengkap ASC";
+                            $instance->table.nis ASC;";
 
         $stmt = $instance->conn->prepare($query);
         $stmt->execute();

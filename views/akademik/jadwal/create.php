@@ -39,7 +39,7 @@
                                         <label for="hari">Hari</label>
                                         <select class="form-control" id="hari" name="hari" required>
                                             <option value="">-- Pilih Hari --</option>
-                                            <?php foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'] as $hari): ?>
+                                            <?php foreach ($data['hari'] as $hari): ?>
                                                 <option value="<?php echo $hari;?>"><?php echo $hari;?></option>
                                             <?php endforeach; ?>
                                         </select>

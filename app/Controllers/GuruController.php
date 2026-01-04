@@ -18,12 +18,6 @@ class GuruController extends Controller
 
     public function __construct()
     {
-        // Security Check
-        if (! isset($_SESSION['role']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Guru')) {
-            header('Location: ' . BASE_URL . '/dashboard');
-            exit;
-        }
-
         $this->db   = new Database();
         $this->conn = $this->db->getConnection();
     }

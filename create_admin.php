@@ -13,7 +13,7 @@ $username = "hans";
 $password = "123456";
 $role     = "Siswa";
 
-$user = User::register($username, $password, $role);
+$user = User::create([$username, $password, $role]);
 echo "Sedang mencoba membuat user admin...<br>";
 
 // 4. Eksekusi

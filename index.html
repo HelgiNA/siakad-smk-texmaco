@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validasi Absensi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main class="page-container">
+
+        <header class="page-header">
+            <h1 class="page-title">Detail Validasi Absensi</h1>
+            <div class="meta-info">
+                <span class="meta-id">ID: #REQ-2023-10-0045</span>
+                <span class="meta-status">Menunggu Validasi</span>
+            </div>
+        </header>
+
+        <div class="row">
+            
+            <div class="col-4">
+                <form id="validationForm" action="/process-validation" method="POST">
+                    <input type="hidden" name="validation_status" id="validationStatusInput" value="">
+        
+                    <section class="card validation-card">
+                        <h2 class="card-title visually-hidden">Informasi Jadwal</h2>
+                        
+                        <div class="info-list">
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Waktu</span>
+                                <span class="info-value">Senin, 23 Okt 2023 <br> 07:00 - 08:40</span>
+                            </div>
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Kelas / Mapel</span>
+                                <span class="info-value">XII IPA 2 &bull; Fisika Dasar</span>
+                            </div>
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Guru Pengajar</span>
+                                <span class="info-value">Budi Santoso, S.Pd.</span>
+                            </div>
+                            <div class="info-row" style="flex-direction: column; gap: 4px;">
+                                <span class="info-label">Catatan Guru</span>
+                                <p class="info-value text-wrap" style="font-weight: 400; font-size: 14px;">Siswa atas nama Rian sakit di UKS pada jam kedua. Selebihnya aman.</p>
+                            </div>
+                        </div>
+        
+                        <div class="action-group" style="flex-direction: column;">
+                            <button type="button" class="btn btn-solid-success" id="btnTriggerApprove">
+                                Validasi Absensi
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" id="btnTriggerReject">
+                                Tolak (Revisi)
+                            </button>
+                        </div>
+                    </section>
+        
+                    <div id="modalReject" class="modal-overlay hidden" role="dialog" aria-modal="true">
+                        <div class="modal-box">
+                            <h3 class="modal-title">Tolak Pengajuan Absensi?</h3>
+                            <p class="modal-desc">Tindakan ini akan mengembalikan status absensi ke guru untuk diperbaiki.</p>
+                            <div class="form-field">
+                                <label for="rejectReason" class="field-label">Alasan Penolakan <span class="text-danger">*</span></label>
+                                <textarea name="rejection_reason" id="rejectReason" class="input-textarea" placeholder="Contoh: Data siswa tidak sesuai..."></textarea>
+                            </div>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-ghost" data-close-modal>Batal</button>
+                                <button type="submit" class="btn btn-solid-danger" id="submitReject">Ya, Tolak Absensi</button>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div id="modalApprove" class="modal-overlay hidden" role="dialog" aria-modal="true">
+                        <div class="modal-box">
+                            <h3 class="modal-title">Konfirmasi Validasi</h3>
+                            <p class="modal-desc">Apakah Anda yakin data absensi ini sudah benar dan siap disimpan?</p>
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-ghost" data-close-modal>Batal</button>
+                                <button type="submit" class="btn btn-solid-success" id="submitApprove">Ya, Validasi</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-8">
+                <section class="card table-card">
+                    <h2 class="card-title">Detail Kehadiran Siswa</h2>
+                    <div class="table-wrapper">
+                        <table class="att-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-no">No</th>
+                                    <th class="w-nis">NIS</th>
+                                    <th class="text-left">Nama Siswa</th>
+                                    <th class="w-status">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">1</td>
+                                    <td class="text-center">10293</td>
+                                    <td>Ahmad Zulkarnain</td>
+                                    <td><span class="badge status-hadir">Hadir</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">2</td>
+                                    <td class="text-center">10294</td>
+                                    <td>Citra Lestari</td>
+                                    <td><span class="badge status-sakit">Sakit</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">3</td>
+                                    <td class="text-center">10295</td>
+                                    <td>Doni Pratama</td>
+                                    <td><span class="badge status-alfa">Alfa</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">4</td>
+                                    <td class="text-center">10296</td>
+                                    <td>Eka Saputra</td>
+                                    <td><span class="badge status-hadir">Hadir</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+            </div> </main>
+    <script src="script.js"></script>
+</body>
+</html>

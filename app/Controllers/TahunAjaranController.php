@@ -8,15 +8,7 @@ use App\Models\TahunAjaran;
 
 class TahunAjaranController extends Controller
 {
-    public function __construct()
-    {
-        // Hanya Admin yang boleh akses
-        if (! isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-            header('Location: ' . BASE_URL . '/dashboard');
-            exit;
-        }
-    }
-
+    
     public function index()
     {
         $data = [

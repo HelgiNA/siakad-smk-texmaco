@@ -7,94 +7,350 @@ use App\Controllers\HomeController;
 use App\Controllers\JadwalController;
 use App\Controllers\KelasController;
 use App\Controllers\MapelController;
+use App\Controllers\NilaiController;
 use App\Controllers\PlottingController;
 use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
 use App\Controllers\ValidasiController;
+use App\Controllers\ValidasiNilaiController;
+
 use App\Core\Route;
 
 $routes = new Route();
 
-$routes->get('/', [HomeController::class, 'index'], 'authMiddleware');
-$routes->get('/dashboard', [HomeController::class, 'index'], 'authMiddleware');
+// =============================================================================
+// 1. AUTHENTICATION & PUBLIC ROUTES
+// =============================================================================
+$routes->get("/login", [AuthController::class, "login"], ["guest"]);
+$routes->post("/login", [AuthController::class, "submitLogin"], ["guest"]);
+$routes->get("/logout", [AuthController::class, "logout"], ["auth"]);
 
-$routes->get('/login', [AuthController::class, 'login']);
-$routes->post('/login', [AuthController::class, 'submitLogin']);
-$routes->get('/logout', [AuthController::class, 'logout'], 'authMiddleware');
+$routes->get("/", [HomeController::class, "index"], ["auth"]);
+$routes->get("/dashboard", [HomeController::class, "index"], ["auth"]);
 
-// MANAJEMEN USER (Hanya Admin)
-// middleware 'authMiddleware' dipasang sebagai lapisan keamanan pertama (harus login dulu)
-$routes->get('/users', [UserController::class, 'index'], 'authMiddleware');
-$routes->get('/users/create', [UserController::class, 'create'], 'authMiddleware');
-$routes->post('/users/store', [UserController::class, 'store'], 'authMiddleware');
-$routes->get('/users/edit', [UserController::class, 'edit'], 'authMiddleware');
-$routes->post('/users/update', [UserController::class, 'update'], 'authMiddleware');
-$routes->get('/users/delete', [UserController::class, 'destroy'], 'authMiddleware');
+// =============================================================================
+// 2. MANAJEMEN MASTER DATA (Hanya Admin)
+// =============================================================================
 
-// MANAJEMEN SISWA
-$routes->get('/siswa', [SiswaController::class, 'index'], 'authMiddleware');
-$routes->get('/siswa/create', [SiswaController::class, 'create', 'authMiddleware']);
-$routes->post('/siswa/store', [SiswaController::class, 'store'], 'authMiddleware');
-$routes->get('/siswa/edit', [SiswaController::class, 'edit'], 'authMiddleware');
-$routes->post('/siswa/update', [SiswaController::class, 'update'], 'authMiddleware');
-$routes->get('/siswa/delete', [SiswaController::class, 'destroy'], 'authMiddleware');
+// MANAJEMEN USER
+$routes->get(
+    "/users",
+    [UserController::class, "index"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/users/create",
+    [UserController::class, "create"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/users/store",
+    [UserController::class, "store"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/users/edit",
+    [UserController::class, "edit"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/users/update",
+    [UserController::class, "update"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/users/delete",
+    [UserController::class, "destroy"],
+    ["auth", "role:Admin"]
+);
+
+// MANAJENEN SISWA
+$routes->get(
+    "/siswa",
+    [SiswaController::class, "index"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/siswa/create",
+    [SiswaController::class, "create"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/siswa/store",
+    [SiswaController::class, "store"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/siswa/edit",
+    [SiswaController::class, "edit"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/siswa/update",
+    [SiswaController::class, "update"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/siswa/delete",
+    [SiswaController::class, "destroy"],
+    ["auth", "role:Admin"]
+);
 
 // MANAJEMEN GURU
-$routes->get('/guru', [GuruController::class, 'index'], 'authMiddleware');
-$routes->get('/guru/create', [GuruController::class, 'create'], 'authMiddleware');
-$routes->post('/guru/store', [GuruController::class, 'store'], 'authMiddleware');
-$routes->get('/guru/edit', [GuruController::class, 'edit'], 'authMiddleware');      // NEW
-$routes->post('/guru/update', [GuruController::class, 'update'], 'authMiddleware'); // NEW
-$routes->get('/guru/delete', [GuruController::class, 'destroy'], 'authMiddleware'); // NEW
+$routes->get("/guru", [GuruController::class, "index"], ["auth", "role:Admin"]);
+$routes->get(
+    "/guru/create",
+    [GuruController::class, "create"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/guru/store",
+    [GuruController::class, "store"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/guru/edit",
+    [GuruController::class, "edit"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/guru/update",
+    [GuruController::class, "update"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/guru/delete",
+    [GuruController::class, "destroy"],
+    ["auth", "role:Admin"]
+);
 
 // MANAJEMEN TAHUN AJARAN
-$routes->get('/tahun-ajaran', [TahunAjaranController::class, 'index'], 'authMiddleware');
-$routes->get('/tahun-ajaran/create', [TahunAjaranController::class, 'create'], 'authMiddleware');
-$routes->post('/tahun-ajaran/store', [TahunAjaranController::class, 'store'], 'authMiddleware');
-$routes->get('/tahun-ajaran/edit', [TahunAjaranController::class, 'edit'], 'authMiddleware');
-$routes->post('/tahun-ajaran/update', [TahunAjaranController::class, 'update'], 'authMiddleware');
-$routes->get('/tahun-ajaran/activate', [TahunAjaranController::class, 'activate'], 'authMiddleware');
-$routes->get('/tahun-ajaran/delete', [TahunAjaranController::class, 'destroy'], 'authMiddleware');
+$routes->get(
+    "/tahun-ajaran",
+    [TahunAjaranController::class, "index"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/tahun-ajaran/create",
+    [TahunAjaranController::class, "create"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/tahun-ajaran/store",
+    [TahunAjaranController::class, "store"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/tahun-ajaran/edit",
+    [TahunAjaranController::class, "edit"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/tahun-ajaran/update",
+    [TahunAjaranController::class, "update"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/tahun-ajaran/activate",
+    [TahunAjaranController::class, "activate"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/tahun-ajaran/delete",
+    [TahunAjaranController::class, "destroy"],
+    ["auth", "role:Admin"]
+);
 
 // MANAJEMEN KELAS
-$routes->get('/kelas', [KelasController::class, 'index'], 'authMiddleware');
-$routes->get('/kelas/create', [KelasController::class, 'create'], 'authMiddleware');
-$routes->post('/kelas/store', [KelasController::class, 'store'], 'authMiddleware');
-$routes->get('/kelas/edit', [KelasController::class, 'edit'], 'authMiddleware');
-$routes->post('/kelas/update', [KelasController::class, 'update'], 'authMiddleware');
-$routes->get('/kelas/delete', [KelasController::class, 'destroy'], 'authMiddleware');
+$routes->get(
+    "/kelas",
+    [KelasController::class, "index"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/kelas/create",
+    [KelasController::class, "create"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/kelas/store",
+    [KelasController::class, "store"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/kelas/edit",
+    [KelasController::class, "edit"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/kelas/update",
+    [KelasController::class, "update"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/kelas/delete",
+    [KelasController::class, "destroy"],
+    ["auth", "role:Admin"]
+);
 
 // MANAJEMEN MATA PELAJARAN
-$routes->get('/mapel', [MapelController::class, 'index'], 'authMiddleware');
-$routes->get('/mapel/create', [MapelController::class, 'create'], 'authMiddleware');
-$routes->post('/mapel/store', [MapelController::class, 'store'], 'authMiddleware');
-$routes->get('/mapel/edit', [MapelController::class, 'edit'], 'authMiddleware');
-$routes->post('/mapel/update', [MapelController::class, 'update'], 'authMiddleware');
-$routes->get('/mapel/delete', [MapelController::class, 'destroy'], 'authMiddleware');
+$routes->get(
+    "/mapel",
+    [MapelController::class, "index"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/mapel/create",
+    [MapelController::class, "create"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/mapel/store",
+    [MapelController::class, "store"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/mapel/edit",
+    [MapelController::class, "edit"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/mapel/update",
+    [MapelController::class, "update"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/mapel/delete",
+    [MapelController::class, "destroy"],
+    ["auth", "role:Admin"]
+);
 
-// JADWAL PELAJARAN
-$routes->get('/jadwal', [JadwalController::class, 'index'], 'authMiddleware');
-$routes->get('/jadwal/create', [JadwalController::class, 'create'], 'authMiddleware');
-$routes->post('/jadwal/store', [JadwalController::class, 'store'], 'authMiddleware');
-$routes->get('/jadwal/edit', [JadwalController::class, 'edit'], 'authMiddleware');
-$routes->post('/jadwal/update', [JadwalController::class, 'update'], 'authMiddleware');
-$routes->get('/jadwal/delete', [JadwalController::class, 'destroy'], 'authMiddleware');
+// =============================================================================
+// 3. AKADEMIK (Admin & Guru Terbatas)
+// =============================================================================
 
-// PLOTTING SISWA (ROMBEL)
-$routes->get('/plotting', [PlottingController::class, 'index'], 'authMiddleware');
-$routes->get('/plotting/manage', [PlottingController::class, 'manage'], 'authMiddleware');
-$routes->post('/plotting/add', [PlottingController::class, 'add'], 'authMiddleware');
-$routes->post('/plotting/remove', [PlottingController::class, 'remove'], 'authMiddleware');
+// JADWAL PELAJARAN (Admin yang atur)
+$routes->get(
+    "/jadwal",
+    [JadwalController::class, "index"],
+    ["auth", "role:Admin"]
+); // Guru boleh lihat
+$routes->get(
+    "/jadwal/create",
+    [JadwalController::class, "create"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/jadwal/store",
+    [JadwalController::class, "store"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/jadwal/edit",
+    [JadwalController::class, "edit"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/jadwal/update",
+    [JadwalController::class, "update"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/jadwal/delete",
+    [JadwalController::class, "destroy"],
+    ["auth", "role:Admin"]
+);
 
-// ABSENSI (GURU)
-$routes->get('/absensi', [AbsensiController::class, 'index'], 'authMiddleware');
-$routes->get('/absensi/input', [AbsensiController::class, 'input'], 'authMiddleware');
-$routes->post('/absensi/submit', [AbsensiController::class, 'submit'], 'authMiddleware');
+// PLOTTING SISWA (Admin yang atur)
+$routes->get(
+    "/plotting",
+    [PlottingController::class, "index"],
+    ["auth", "role:Admin"]
+);
+$routes->get(
+    "/plotting/manage",
+    [PlottingController::class, "manage"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/plotting/add",
+    [PlottingController::class, "add"],
+    ["auth", "role:Admin"]
+);
+$routes->post(
+    "/plotting/remove",
+    [PlottingController::class, "remove"],
+    ["auth", "role:Admin"]
+);
 
-// VALIDASI (WALI KELAS)
-$routes->get('/validasi', [ValidasiController::class, 'index'], 'authMiddleware');
-$routes->get('/validasi/detail', [ValidasiController::class, 'detail'], 'authMiddleware');
-$routes->post('/validasi/approve', [ValidasiController::class, 'approve'], 'authMiddleware');
+// =============================================================================
+// 4. FITUR UTAMA GURU & WALI KELAS
+// =============================================================================
+
+// --- Bagian Guru Mapel / Input ---
+$routes->get(
+    "/absensi",
+    [AbsensiController::class, "index"],
+    ["auth", "role:Guru"]
+); // List History
+$routes->get(
+    "/absensi/create",
+    [AbsensiController::class, "create"],
+    ["auth", "role:Guru"]
+); // Form Input
+$routes->post(
+    "/absensi/store",
+    [AbsensiController::class, "store"],
+    ["auth", "role:Guru"]
+); // Proses Simpan
+
+// --- Bagian Wali Kelas / Validasi ---
+$routes->get(
+    "/absensi/validasi",
+    [AbsensiController::class, "validationList"],
+    ["auth", "role:Guru"]
+); // List Pending
+$routes->get(
+    "/absensi/validasi/review",
+    [AbsensiController::class, "validationReview"],
+    ["auth", "role:Guru"]
+); // Detail sebelum approve
+$routes->post(
+    "/absensi/validasi/process",
+    [AbsensiController::class, "validationProcess"],
+    ["auth", "role:Guru"]
+); // Aksi Approve/Reject
+
+// FASE 4: INPUT NILAI AKADEMIK
+// Sequence SIA-006 (V2 - Draft + Submission)
+$routes->get(
+    "/nilai/create",
+    [NilaiController::class, "create"],
+    ["auth", "role:Guru"]
+);
+$routes->get(
+    "/nilai/input",
+    [NilaiController::class, "input"],
+    ["auth", "role:Guru"]
+);
+$routes->post(
+    "/nilai/store",
+    [NilaiController::class, "store"],
+    ["auth", "role:Guru"]
+);
+
+// FASE 4: VALIDASI NILAI AKADEMIK (Wali Kelas)
+// Sequence SIA-007
+$routes->get(
+    "/validasi-nilai",
+    [ValidasiNilaiController::class, "index"],
+    ["auth", "role:Guru"]
+);
+$routes->post(
+    "/validasi-nilai/proses",
+    [ValidasiNilaiController::class, "proses"],
+    ["auth", "role:Guru"]
+);
 
 return $routes;

@@ -7,17 +7,6 @@ use App\Models\User;
 
 class UserController extends Controller
 {
-    public function __construct()
-    {
-        // CEK OTORISASI (LEVEL ADMIN)
-        // Sesuai ADPL: Hanya role 'Admin' yang boleh akses halaman ini
-        // Jika role bukan Admin, tendang ke dashboard
-        if (! isset($_SESSION['role']) || $_SESSION['role'] !== 'Admin') {
-            header('Location: ' . BASE_URL . '/dashboard');
-            exit;
-        }
-    }
-
     // MENAMPILKAN SEMUA USER
     public function index()
     {
