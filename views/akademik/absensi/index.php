@@ -78,7 +78,7 @@ ob_start(); ?>
                                             "Belum Input" ||
                                         $j["status_absensi"] === "Rejected"
                                     ): ?>
-                                    <a href="<?php echo BASE_URL; ?>/absensi/input?jadwal_id=<?php echo $j[
+                                    <a href="<?php echo BASE_URL; ?>/absensi/create?jadwal_id=<?php echo $j[
     "jadwal_id"
 ]; ?>"
                                         class="btn btn-sm btn-primary">

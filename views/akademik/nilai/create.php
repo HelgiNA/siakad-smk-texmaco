@@ -9,6 +9,8 @@
  * 2. Guru klik salah satu → go to input form (Fase 2)
  */
 ?>
+<?php ob_start(); ?>
+
 
 <div class="container-fluid">
     <div class="row">
@@ -19,12 +21,7 @@
                 </div>
                 
                 <div class="card-body">
-                    <?php if (empty($kelasMapelList)): ?>
-                        <div class="alert alert-info">
-                            Anda tidak memiliki jadwal mengajar di tahun ajaran ini.
-                        </div>
-                        <a href="<?php echo BASE_URL; ?>/dashboard" class="btn btn-secondary">Kembali</a>
-                    <?php else: ?>
+                    <?php showAlert(); ?>
                         <p class="text-muted">Pilih Kelas dan Mapel yang akan Anda input nilainya:</p>
                         
                         <div class="table-responsive">
@@ -54,7 +51,6 @@
                                 </tbody>
                             </table>
                         </div>
-                    <?php endif; ?>
                 </div>
 
                 <div class="card-footer">
@@ -65,4 +61,7 @@
     </div>
 </div>
 
-<?php include BASE_PATH . '/views/components/flash.php'; ?>
+<?php
+    $content = ob_get_clean();
+require_once __DIR__ . '/../../layouts/main.php';
+?>

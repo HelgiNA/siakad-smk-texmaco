@@ -10,27 +10,38 @@ class Database
     private $db_name = DB_NAME;
     private $username = DB_USERNAME;
     private $password = DB_PASSWORD;
-    public $conn;
+
+    // Simpan koneksi secara statis agar tidak terbuat berulang kali
+    private static $instance = null;
 
     public function getConnection()
     {
-        $this->conn = null;
+        // Jika koneksi sudah ada, langsung kembalikan yang sudah ada
+        if (self::$instance !== null) {
+            return self::$instance;
+        }
+
         try {
-            $this->conn = new PDO(
+            self::$instance = new PDO(
                 "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
                 $this->username,
-                $this->password
-            );
-            $this->conn->setAttribute(
-                PDO::ATTR_ERRMODE,
-                PDO::ERRMODE_EXCEPTION
+                $this->password,
+                [
+                    // Tambahkan opsi agar koneksi stabil
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_PERSISTENT => false, // Opsional, tergantung kebutuhan server
+                ]
             );
         } catch (PDOException $exception) {
-            redirect('/login')->with([
+            // Pastikan fungsi redirect() tersedia di helper Anda
+            redirect("/login")->with([
                 "error",
                 "Connection error: " . $exception->getMessage(),
             ]);
+            exit();
         }
-        return $this->conn;
+
+        return self::$instance;
     }
 }

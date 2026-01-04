@@ -19,6 +19,8 @@
  * - Jika status='Revisi': Form editable + tampil catatan feedback
  */
 ?>
+<?php ob_start(); ?>
+
 
 <div class="container-fluid">
     <div class="row">
@@ -37,6 +39,7 @@
                     <!-- SIA-006 V2: Alert Catatan Revisi (jika ada feedback dari Wali) -->
                     <?php
                     // Cek apakah ada nilai dengan status 'Revisi' dan catatan revisi
+                    showAlert();
                     $hasRevisi = false;
                     $catatanRevisi = [];
                     if (!empty($nilaiMap)) {
@@ -275,4 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include BASE_PATH . '/views/components/flash.php'; ?>
+<?php
+    $content = ob_get_clean();
+require_once __DIR__ . '/../../layouts/main.php';
+?>

@@ -111,7 +111,7 @@ function getStatusClass($status)
                 ); ?></span>
             </div>
         </div>
-        <a href="<?php echo BASE_URL; ?>/validasi" class="btn btn-ghost" style="width: auto;">
+        <a href="<?php echo BASE_URL; ?>/absensi/validasi" class="btn btn-ghost" style="width: auto;">
             &larr; Kembali
         </a>
     </header>
@@ -119,7 +119,7 @@ function getStatusClass($status)
     <div class="row">
         
         <div class="col-sm-4 col-12 mb-3">
-            <form id="validationForm" action="<?php echo BASE_URL; ?>/validasi/approve" method="POST">
+            <form id="validationForm" action="<?php echo BASE_URL; ?>/absensi/validasi/process" method="POST">
                 
                 <input type="hidden" name="absensi_id" value="<?php echo $absensi[
                     "absensi_id"

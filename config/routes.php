@@ -288,39 +288,39 @@ $routes->post(
 // 4. FITUR UTAMA GURU & WALI KELAS
 // =============================================================================
 
-// ABSENSI (Guru)
+// --- Bagian Guru Mapel / Input ---
 $routes->get(
     "/absensi",
     [AbsensiController::class, "index"],
     ["auth", "role:Guru"]
-);
+); // List History
 $routes->get(
-    "/absensi/input",
-    [AbsensiController::class, "input"],
+    "/absensi/create",
+    [AbsensiController::class, "create"],
     ["auth", "role:Guru"]
-);
+); // Form Input
 $routes->post(
-    "/absensi/submit",
-    [AbsensiController::class, "submit"],
+    "/absensi/store",
+    [AbsensiController::class, "store"],
     ["auth", "role:Guru"]
-);
+); // Proses Simpan
 
-// VALIDASI (Wali Kelas)
+// --- Bagian Wali Kelas / Validasi ---
 $routes->get(
-    "/validasi",
-    [ValidasiController::class, "index"],
+    "/absensi/validasi",
+    [AbsensiController::class, "validationList"],
     ["auth", "role:Guru"]
-);
+); // List Pending
 $routes->get(
-    "/validasi/detail",
-    [ValidasiController::class, "detail"],
+    "/absensi/validasi/review",
+    [AbsensiController::class, "validationReview"],
     ["auth", "role:Guru"]
-);
+); // Detail sebelum approve
 $routes->post(
-    "/validasi/approve",
-    [ValidasiController::class, "approve"],
+    "/absensi/validasi/process",
+    [AbsensiController::class, "validationProcess"],
     ["auth", "role:Guru"]
-);
+); // Aksi Approve/Reject
 
 // FASE 4: INPUT NILAI AKADEMIK
 // Sequence SIA-006 (V2 - Draft + Submission)
@@ -338,7 +338,6 @@ $routes->post(
     "/nilai/store",
     [NilaiController::class, "store"],
     ["auth", "role:Guru"]
-);
 );
 
 // FASE 4: VALIDASI NILAI AKADEMIK (Wali Kelas)

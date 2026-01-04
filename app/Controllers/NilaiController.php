@@ -193,6 +193,7 @@ class NilaiController extends Controller
             setAlert("error", "Data Kelas, Mapel, atau Tahun tidak valid.");
             return $this->redirect("nilai/create");
         }
+        
 
         if (empty($nilaiData)) {
             setAlert("error", "Tidak ada data nilai yang dikirim.");
@@ -293,9 +294,12 @@ class NilaiController extends Controller
                 return $this->redirect("nilai/input?kelas_id=$kelas_id&mapel_id=$mapel_id");
             }
         }
-
+        
+        Nilai::sumbitToWali($kelas_id, $mapel_id, $tahun_id);
         // Update semua nilai jadi status 'Submitted' (hanya yang Draft)
-        $instance = new Nilai();
+        $this->db   = new Database();
+        $this->conn = $this->db->getConnection();
+
         $query = "UPDATE nilai 
                  SET status_validasi = 'Submitted'
                  WHERE siswa_id IN (
@@ -304,9 +308,10 @@ class NilaiController extends Controller
                  AND mapel_id = :mapel_id
                  AND tahun_id = :tahun_id
                  AND status_validasi = 'Draft'";
+                 
 
         try {
-            $stmt = $instance->conn->prepare($query);
+            $stmt = $this->conn->prepare($query);
             $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
             $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
             $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);

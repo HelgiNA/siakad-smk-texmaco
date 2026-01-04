@@ -14,7 +14,7 @@ ob_start(); ?>
         --status-hadir: #10b981; 
         --status-sakit: #f59e0b; 
         --status-izin: #3b82f6;  
-        --status-alfa: #ef4444;  
+        --status-alpa: #ef4444;  
         
         --radius-lg: 12px;
         --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -49,7 +49,7 @@ ob_start(); ?>
     .att-stat[data-status="hadir"] .att-stat__icon { color: var(--status-hadir); }
     .att-stat[data-status="sakit"] .att-stat__icon { color: var(--status-sakit); }
     .att-stat[data-status="izin"] .att-stat__icon { color: var(--status-izin); }
-    .att-stat[data-status="alfa"] .att-stat__icon { color: var(--status-alfa); }
+    .att-stat[data-status="alpa"] .att-stat__icon { color: var(--status-alpa); }
     
     .att-stat__icon svg { width: 24px; height: 24px; margin-bottom: 8px; }
     .att-stat__count { display: block; font-weight: 700; font-size: 1.25rem; margin-bottom: 2px; } /* Jarak angka ke text */
@@ -106,7 +106,7 @@ ob_start(); ?>
     .att-trigger.is-hadir { color: var(--status-hadir); background: rgba(16, 185, 129, 0.1); }
     .att-trigger.is-sakit { color: var(--status-sakit); background: rgba(245, 158, 11, 0.1); }
     .att-trigger.is-izin  { color: var(--status-izin);  background: rgba(59, 130, 246, 0.1); }
-    .att-trigger.is-alfa  { color: var(--status-alfa);  background: rgba(239, 68, 68, 0.1); }
+    .att-trigger.is-alpa  { color: var(--status-alpa);  background: rgba(239, 68, 68, 0.1); }
 
     /* Menu Dropdown */
     .att-menu { position: absolute; right: 0; top: -5px; background: white; border: 1px solid var(--color-border); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 50px; display: flex; padding: 4px; gap: 4px; z-index: 50; }
@@ -119,7 +119,7 @@ ob_start(); ?>
     .att-menu__opt[data-value="Hadir"] { background: #d1fae5; color: var(--status-hadir); }
     .att-menu__opt[data-value="Sakit"] { background: #fef3c7; color: var(--status-sakit); }
     .att-menu__opt[data-value="Izin"]  { background: #dbeafe; color: var(--status-izin); }
-    .att-menu__opt[data-value="Alfa"]  { background: #fee2e2; color: var(--status-alfa); }
+    .att-menu__opt[data-value="Alpa"]  { background: #fee2e2; color: var(--status-alpa); }
 
     /* Footer */
     .att-recap { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--color-text-muted); padding: 0 4px; }
@@ -157,7 +157,7 @@ ob_start(); ?>
     <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></symbol>
 </svg>
 
-<form action="<?php echo BASE_URL; ?>/absensi/submit" method="POST">
+<form action="<?php echo BASE_URL; ?>/absensi/store" method="POST">
     <input type="hidden" name="jadwal_id" value="<?php echo $jadwal[
         "jadwal_id"
     ]; ?>">
@@ -178,9 +178,9 @@ ob_start(); ?>
                 <div class="att-stat__icon"><svg><use href="#icon-info"></use></svg></div>
                 <div class="att-stat__info"><span class="att-stat__count" id="count-Izin">0</span><span class="att-stat__label">Izin</span></div>
             </div>
-            <div class="att-stat" data-status="alfa">
+            <div class="att-stat" data-status="alpa">
                 <div class="att-stat__icon"><svg><use href="#icon-x"></use></svg></div>
-                <div class="att-stat__info"><span class="att-stat__count" id="count-Alfa">0</span><span class="att-stat__label">Alfa</span></div>
+                <div class="att-stat__info"><span class="att-stat__count" id="count-Alpa">0</span><span class="att-stat__label">Alpa</span></div>
             </div>
         </header>
 
@@ -219,7 +219,7 @@ ob_start(); ?>
                     
                     <div class="col-action att-action">
                         <input type="hidden" 
-                               name="status_keHadiran[<?php echo $s[
+                               name="status_kehadiran[<?php echo $s[
                                    "siswa_id"
                                ]; ?>]" 
                                value="<?php echo $savedStatus; ?>">
@@ -232,7 +232,7 @@ ob_start(); ?>
                             <button type="button" class="att-menu__opt" data-value="Hadir" onclick="setStatus(this, 'Hadir')"><svg><use href="#icon-check"></use></svg></button>
                             <button type="button" class="att-menu__opt" data-value="Sakit" onclick="setStatus(this, 'Sakit')"><svg><use href="#icon-sick"></use></svg></button>
                             <button type="button" class="att-menu__opt" data-value="Izin" onclick="setStatus(this, 'Izin')"><svg><use href="#icon-info"></use></svg></button>
-                            <button type="button" class="att-menu__opt" data-value="Alfa" onclick="setStatus(this, 'Alfa')"><svg><use href="#icon-x"></use></svg></button>
+                            <button type="button" class="att-menu__opt" data-value="Alpa" onclick="setStatus(this, 'Alpa')"><svg><use href="#icon-x"></use></svg></button>
                         </div>
                     </div>
                 </li>
@@ -263,7 +263,7 @@ ob_start(); ?>
 <script type="text/javascript" charset="utf-8">
     document.addEventListener('DOMContentLoaded', () => {
         // State
-        let counts = { Hadir: 0, Sakit: 0, Izin: 0, Alfa: 0 };
+        let counts = { Hadir: 0, Sakit: 0, Izin: 0, Alpa: 0 };
         const totalStudents = document.querySelectorAll('.att-item').length;
         let markedCount = 0;
     
@@ -282,11 +282,11 @@ ob_start(); ?>
             if(input) input.value = status;
             
             // Tentukan Icon & Class (Convert status ke lowercase untuk Class CSS: .is-hadir, .is-sakit)
-            const cssStatus = status.toLowerCase(); // hadir, sakit, izin, alfa
-            const iconId = `#icon-${cssStatus === 'hadir' ? 'check' : cssStatus === 'alfa' ? 'x' : cssStatus === 'sakit' ? 'sick' : 'info'}`;
+            const cssStatus = status.toLowerCase(); // hadir, sakit, izin, alpa
+            const iconId = `#icon-${cssStatus === 'hadir' ? 'check' : cssStatus === 'alpa' ? 'x' : cssStatus === 'sakit' ? 'sick' : 'info'}`;
             
             trigger.innerHTML = `<svg><use href="${iconId}"></use></svg>`;
-            trigger.classList.remove('is-hadir', 'is-sakit', 'is-izin', 'is-alfa');
+            trigger.classList.remove('is-hadir', 'is-sakit', 'is-izin', 'is-alpa');
             trigger.classList.add(`is-${cssStatus}`);
     
             item.dataset.status = status;
@@ -294,8 +294,8 @@ ob_start(); ?>
             // Safety check key exists
             if (counts.hasOwnProperty(status)) {
                 counts[status]++;
-            } else if (status === 'Alpa' || status === 'Alfa') {
-                counts.Alfa++; // Handle variasi penulisan Alpa/Alfa
+            } else if (status === 'Alpa') {
+                counts.Alpa++; // Handle variasi penulisan Alpa/Alpa
             }
         });
     
@@ -328,10 +328,10 @@ ob_start(); ?>
     
             // 2. Update Visual (Gunakan Lowercase untuk CSS)
             const cssStatus = status.toLowerCase();
-            const iconId = `#icon-${cssStatus === 'hadir' ? 'check' : cssStatus === 'alfa' ? 'x' : cssStatus === 'sakit' ? 'sick' : 'info'}`;
+            const iconId = `#icon-${cssStatus === 'hadir' ? 'check' : cssStatus === 'alpa' ? 'x' : cssStatus === 'sakit' ? 'sick' : 'info'}`;
             
             triggerBtn.innerHTML = `<svg><use href="${iconId}"></use></svg>`;
-            triggerBtn.classList.remove('is-hadir', 'is-sakit', 'is-izin', 'is-alfa');
+            triggerBtn.classList.remove('is-hadir', 'is-sakit', 'is-izin', 'is-alpa');
             triggerBtn.classList.add(`is-${cssStatus}`);
     
             // 3. Update Hitungan
@@ -340,14 +340,14 @@ ob_start(); ?>
             // Kurangi count lama
             if (prevStatus) {
                 if(counts.hasOwnProperty(prevStatus)) counts[prevStatus]--;
-                else if(prevStatus === 'Alpa') counts.Alfa--; // Handle Alpa vs Alfa
+                else if(prevStatus === 'Alpa') counts.Alpa--; // Handle Alpa vs Alpa
             } else {
                 markedCount++;
             }
             
             // Tambah count baru
             if(counts.hasOwnProperty(status)) counts[status]++;
-            else if(status === 'Alpa') counts.Alfa++;
+            else if(status === 'Alpa') counts.Alpa++;
             
             listItem.dataset.status = status;
     
@@ -359,7 +359,7 @@ ob_start(); ?>
             document.getElementById('count-Hadir').textContent = counts.Hadir;
             document.getElementById('count-Sakit').textContent = counts.Sakit;
             document.getElementById('count-Izin').textContent = counts.Izin;
-            document.getElementById('count-Alfa').textContent = counts.Alfa; // Pastikan ID di HTML juga Alfa
+            document.getElementById('count-Alpa').textContent = counts.Alpa; // Pastikan ID di HTML juga Alpa
             elUnmarked.textContent = totalStudents - markedCount;
     
             if (markedCount > 0) btnSubmit.disabled = false;

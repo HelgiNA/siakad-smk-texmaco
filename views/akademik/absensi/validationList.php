@@ -56,7 +56,7 @@ ob_start(); ?>
                                 ); ?></td>
                                 <td><span class="badge bg-warning text-dark">Draft</span></td>
                                 <td class="text-center">
-                                    <a href="<?php echo BASE_URL; ?>/validasi/detail?id=<?php echo $row[
+                                    <a href="<?php echo BASE_URL; ?>/absensi/validasi/review?absensi_id=<?php echo $row[
     "absensi_id"
 ]; ?>"
                                         class="btn btn-sm btn-success">

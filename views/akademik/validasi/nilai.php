@@ -6,6 +6,8 @@
  * Wali Kelas bisa approve (Final) atau reject (Revisi + Catatan Mandatory)
  */
 ?>
+<?php ob_start(); ?>
+
 
 <div class="container-fluid">
     <div class="row">
@@ -184,3 +186,7 @@
     });
 </script>
 
+<?php
+    $content = ob_get_clean();
+require_once __DIR__ . '/../../layouts/main.php';
+?>

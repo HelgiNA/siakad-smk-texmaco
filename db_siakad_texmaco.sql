@@ -355,6 +355,7 @@ INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `status_aktif`, 
 ALTER TABLE `absensi`
   ADD PRIMARY KEY (`absensi_id`) USING BTREE,
   ADD KEY `jadwal_id` (`jadwal_id`) USING BTREE;
+  ALTER TABLE `absensi`
 
 --
 -- Indexes for table `bobot_nilai`
@@ -539,9 +540,8 @@ ALTER TABLE `users`
 
 --
 -- Constraints for table `absensi`
---
-ALTER TABLE `absensi`
-  ADD CONSTRAINT `absensi_ibfk_1` FOREIGN KEY (`jadwal_id`) REFERENCES `jadwal` (`jadwal_id`) ON DELETE CASCADE;
+--ALTER TABLE `absensi`
+  ADD CONSTRAINT `absensi_ibfk_1` FOREIGN KEY (`jadwal_id`) REFERENCES `jadwal_pelajaran` (`jadwal_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `catatan_rapor`

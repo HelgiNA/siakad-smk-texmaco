@@ -3,12 +3,15 @@ namespace App\Controllers;
 
 require_once __DIR__ . "/../Models/Absensi.php";
 require_once __DIR__ . "/../Models/Jadwal.php";
+require_once __DIR__ . "/../Models/Kelas.php";
 require_once __DIR__ . "/../Models/Siswa.php";
 require_once __DIR__ . "/../Models/TahunAjaran.php";
 require_once __DIR__ . "/../Models/Guru.php";
 require_once __DIR__ . "/Controller.php";
 
+use App\Models\Model;
 use App\Models\Absensi;
+use App\Models\Kelas;
 use App\Models\Guru;
 use App\Models\Jadwal;
 use App\Models\Siswa;
@@ -57,11 +60,11 @@ class AbsensiController extends Controller
 
         // Check submission status for each schedule
         foreach ($jadwal as &$j) {
-            $existing = Absensi::checkExisting($j["jadwal_id"], date("Y-m-d"));
-            $j["status_absensi"] = $existing
-                ? ENUM["STATUS"][$existing["status_validasi"]]
+            $absensi = Absensi::checkExisting($j["jadwal_id"], date("Y-m-d"));
+            $j["status_absensi"] = $absensi
+                ? ENUM["STATUS"][$absensi["status_validasi"]]
                 : ENUM["STATUS"]["Belum Input"];
-            $j["absensi_id"] = $existing ? $existing["absensi_id"] : null;
+            $j["absensi_id"] = $absensi ? $absensi["absensi_id"] : null;
         }
 
         if (!$jadwal) {
@@ -79,55 +82,55 @@ class AbsensiController extends Controller
     }
 
     // Show Input Form
-    public function input()
+    public function create()
     {
         $jadwal_id = $_GET["jadwal_id"] ?? null;
         if (!$jadwal_id) {
-            $this->redirect("absensi");
+            $this->redirect("absensi")->with(
+                "info",
+                "Anda tidak memiliki jadwal mengajar di tahun ajaran ini."
+            );
             exit();
         }
 
         $jadwal = Jadwal::findWithDetails($jadwal_id);
         if (!$jadwal) {
-            $this->redirect("absensi/create")->with(
-                "error",
-                "Jadwal tidak ditemukan"
-            );
+            $this->redirect("absensi")->with("error", "Jadwal tidak ditemukan");
             exit();
         }
 
         // Cek existing
-        $existing = Absensi::checkExisting($jadwal_id, date("Y-m-d"));
+        $absensi = Absensi::checkExisting($jadwal_id, date("Y-m-d"));
         // Load default siswa list
         $siswa = Siswa::getByKelas($jadwal["kelas_id"]);
 
         // Default values for form
         $absensiData = null;
         $detailsMap = [];
-        if ($existing) {
-                    if (
-            $existing["status_validasi"] === "Valid" ||
-            $existing["status_validasi"] === "Draft"
-        ) {
-            $this->redirect("absensi/create")->with(
-                "info",
-                "Absensi sudah diinput. Status: " . $existing["status_validasi"]
-            );
-            exit();
-        }
-
-        if ($existing["status_validasi"] === "Rejected") {
-            // Allow edit. Load existing details to map status
-            $absensiData = $existing;
-            $existingDetails = Absensi::getDetails($existing["absensi_id"]);
-            foreach ($existingDetails as $d) {
-                $detailsMap[$d["siswa_id"]] = $d["status_kehadiran"];
+        if ($absensi) {
+            if (
+                $absensi["status_validasi"] === "Valid" ||
+                $absensi["status_validasi"] === "Draft"
+            ) {
+                $this->redirect("absensi")->with(
+                    "info",
+                    "Absensi sudah diinput. Status: " .
+                        $absensi["status_validasi"]
+                );
+                exit();
             }
-            // Override catatan harian default with existing
-            $jadwal["catatan_harian_value"] = $existing["catatan_harian"];
-        }
-        }
 
+            if ($absensi["status_validasi"] === "Rejected") {
+                // Allow edit. Load existing details to map status
+                $absensiData = $absensi;
+                $absensiDetails = Absensi::getDetails($absensi["absensi_id"]);
+                foreach ($absensiDetails as $d) {
+                    $detailsMap[$d["siswa_id"]] = $d["status_kehadiran"];
+                }
+                // Override catatan harian default with existing
+                $jadwal["catatan_harian_value"] = $absensi["catatan_harian"];
+            }
+        }
 
         $data = [
             "title" =>
@@ -142,31 +145,23 @@ class AbsensiController extends Controller
             "savedDetails" => $detailsMap,
         ];
 
-        $this->view("akademik/absensi/input", $data);
+        $this->view("akademik/absensi/create", $data);
     }
 
     // Store Attendance
-    public function submit()
+    public function store()
     {
         $jadwal_id = $_POST["jadwal_id"];
         $tanggal = $_POST["tanggal"]; // Usually curdate
-        $catatan = $_POST["catatan_harian"] ?? "";
+        $catatan = $_POST["catatan_harian"] ?? null;
         $status = $_POST["status_kehadiran"] ?? []; // Array of siswa_id => status
 
         if (empty($status)) {
-            $this->redirect("absensi/input?jadwal_id=" . $jadwal_id)->with(
+            $this->redirect("absensi/create?jadwal_id=" . $jadwal_id)->with(
                 "error",
                 "Tidak ada data siswa."
             );
             exit();
-        }
-
-        $detailsData = [];
-        foreach ($status as $siswa_id => $st) {
-            $detailsData[] = [
-                "siswa_id" => $siswa_id,
-                "status_kehadiran" => $st,
-            ];
         }
 
         $headerData = [
@@ -175,39 +170,158 @@ class AbsensiController extends Controller
             "catatan_harian" => $catatan,
         ];
 
+        $dataAbsensiMany = [];
+        foreach ($status as $siswa_id => $st) {
+            $dataAbsensiMany[] = [
+                "siswa_id" => $siswa_id,
+                "status_kehadiran" => $st,
+            ];
+        }
+
         $model = new Absensi();
 
         // Check if updating
-        $existing = Absensi::checkExisting($jadwal_id, $tanggal);
+        $absensi = Absensi::checkExisting($jadwal_id, $tanggal);
 
-        if ($existing && $existing["status_validasi"] === "Rejected") {
-            // REVISION FLOW
-            $result = $model->revise(
-                $existing["absensi_id"],
-                $headerData,
-                $detailsData
-            );
-        } elseif ($existing) {
+        if ($absensi && $absensi["status_validasi"] === "Valid") {
             // Block other updates for now
             $this->redirect("absensi/create")->with(
                 "error",
                 "Data sudah ada dan tidak dalam status revisi."
             );
             exit();
-        } else {
-            // NEW INSERT
-            $result = $model->createWithDetail($headerData, $detailsData);
-        }
-
-        if ($result["status"]) {
-            $this->redirect("absensi/create")->with(
-                "success",
-                "Absensi berhasil disimpan."
+        } elseif ($absensi && $absensi["status_validasi"] === "Rejected") {
+            // Regisi Flow
+            $resultAbsensi = Absensi::submit(
+                $headerData,
+                $dataAbsensiMany,
+                true,
+                $absensi["absensi_id"]
             );
         } else {
-            $this->redirect("absensi/input?jadwal_id=" . $jadwal_id)->with(
+            $resultAbsensi = Absensi::submit($headerData, $dataAbsensiMany);
+        }
+
+        if ($resultAbsensi["status"]) {
+            $this->redirect("absensi/create?jadwal_id=" . $jadwal_id)->with(
                 "error",
-                $result["message"]
+                $resultAbsensi["message"]
+            );
+        }
+
+        $this->redirect("absensi")->with(
+            "success",
+            "Absensi berhasil disimpan."
+        );
+    }
+
+    // Dashboard for Validation
+    public function validationList()
+    {
+        $guru = Guru::findByUserId($_SESSION["user_id"]);
+        if (!$guru) {
+            $this->redirect("dashboard")->with(
+                "error",
+                "Data Guru tidak ditemukan."
+            );
+            exit();
+        }
+
+        // 2. Find Managed Class
+        $kelas = Kelas::getByWaliKelas($guru["guru_id"]);
+        if (!$kelas) {
+            setAlert(
+                "warning",
+                "Anda tidak terdaftar sebagai Wali Kelas untuk kelas manapun."
+            );
+            // Not a wali kelas
+            $this->view("akademik/absensi/validationList", [
+                "title" => "Validasi Absensi",
+                "isWaliKelas" => false,
+                "pending" => [],
+            ]);
+            return;
+        }
+
+        // 3. Get Pending Absensi
+        $pending = Absensi::getPendingByKelas($kelas["kelas_id"]);
+        if (empty($pending)) {
+            setAlert(
+                "info",
+                "Tidak ada pengajuan absensi yang perlu divalidasi saat ini."
+            );
+        }
+
+        $data = [
+            "title" => "Validasi Absensi - Kelas " . $kelas["nama_kelas"],
+            "isWaliKelas" => true,
+            "kelas" => $kelas,
+            "pending" => $pending,
+        ];
+
+        $this->view("akademik/absensi/validationList", $data);
+    }
+
+    // Show Details (and Approve/Reject form)
+    public function validationReview()
+    {
+        $absensi_id = $_GET["absensi_id"] ?? null;
+        if (!$absensi_id) {
+            $this->redirect("absensi/validasi");
+            exit();
+        }
+
+        $absensi = Absensi::findWithDetails($absensi_id);
+        if (!$absensi) {
+            $this->redirect("absensi/validasi")->with(
+                "error",
+                "Data absensi tidak ditemukan."
+            );
+            exit();
+        }
+
+        $details = Absensi::getDetails($absensi_id);
+
+        $data = [
+            "title" => "Detail Validasi Absensi",
+            "absensi" => $absensi,
+            "details" => $details,
+        ];
+
+        $this->view("akademik/absensi/validationReview", $data);
+    }
+
+    // Process Approval
+    public function validationProcess()
+    {
+        $absensi_id = $_POST["absensi_id"];
+        $action = $_POST["action"]; // 'approve' or 'reject'
+
+        if (!$absensi_id || !$action) {
+            $this->redirect("absensi/validasi")->with(
+                "error",
+                "Data tidak valid."
+            );
+            exit();
+        }
+
+        $status = $action === "approve" ? "Valid" : "Rejected";
+
+        $result = Absensi::update($absensi_id, [
+            "status_validasi" => $status,
+            "alasan_penolakan" =>
+                $action === "reject" ? $_POST["alasan_penolakan"] : null,
+        ]);
+
+        if ($result["status"]) {
+            $this->redirect("absensi/validasi")->with(
+                "success",
+                "Status absensi berhasil diperbarui menjadi " . $status
+            );
+        } else {
+            $this->redirect("absensi/validasi/review")->with(
+                "error",
+                "Gagal memperbarui status: " . $result["message"]
             );
         }
     }

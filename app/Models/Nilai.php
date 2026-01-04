@@ -1,14 +1,14 @@
 <?php
 namespace App\Models;
 
-require_once __DIR__ . '/../Models/Model.php';
+require_once __DIR__ . "/../Models/Model.php";
 
 use PDO;
 use PDOException;
 
 class Nilai extends Model
 {
-    protected $table      = "nilai";
+    protected $table = "nilai";
     protected $primaryKey = "nilai_id";
 
     /**
@@ -17,24 +17,32 @@ class Nilai extends Model
     public static function getByKelasMapel($kelas_id, $mapel_id, $tahun_id)
     {
         $instance = new static();
-        $query    = "SELECT
-                        n.*,
+        $query = "SELECT
+                        MAX(n.nilai_id) as id_terakhir, -- Mengambil ID paling baru
                         s.nama_lengkap,
-                        s.siswa_id
+                        s.siswa_id,
+                        n.mapel_id,
+                        n.tahun_id,
+                        MAX(n.nilai_tugas) as nilai_tugas, -- Mengambil nilai tugas terbesar (atau terakhir)
+                        MAX(n.nilai_uts) as nilai_uts,
+                        MAX(n.nilai_uas) as nilai_uas
                     FROM
-                        $instance->table n
-                        JOIN siswa s ON n.siswa_id = s.siswa_id
+                        nilai n
+                    JOIN siswa s ON
+                        n.siswa_id = s.siswa_id
                     WHERE
                         s.kelas_id = :kelas_id
                         AND n.mapel_id = :mapel_id
                         AND n.tahun_id = :tahun_id
+                    GROUP BY
+                        s.siswa_id, n.mapel_id, n.tahun_id -- Kunci pengelompokan
                     ORDER BY
-                        s.nama_lengkap ASC";
+                        s.nama_lengkap ASC;";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
+        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -45,15 +53,15 @@ class Nilai extends Model
     public static function checkExisting($siswa_id, $mapel_id, $tahun_id)
     {
         $instance = new static();
-        $query    = "SELECT * FROM $instance->table 
+        $query = "SELECT * FROM $instance->table 
                     WHERE siswa_id = :siswa_id 
                     AND mapel_id = :mapel_id 
                     AND tahun_id = :tahun_id";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
-        $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(":siswa_id", $siswa_id, PDO::PARAM_INT);
+        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
+        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -88,46 +96,52 @@ class Nilai extends Model
 
             foreach ($dataNilai as $row) {
                 // Validasi data
-                $tugas = (float) $row['tugas'];
-                $uts   = (float) $row['uts'];
-                $uas   = (float) $row['uas'];
+                $tugas = (float) $row["tugas"];
+                $uts = (float) $row["uts"];
+                $uas = (float) $row["uas"];
 
                 // Cek range nilai (0-100)
-                if ($tugas < 0 || $tugas > 100 || $uts < 0 || $uts > 100 || $uas < 0 || $uas > 100) {
+                if (
+                    $tugas < 0 ||
+                    $tugas > 100 ||
+                    $uts < 0 ||
+                    $uts > 100 ||
+                    $uas < 0 ||
+                    $uas > 100
+                ) {
                     $instance->conn->rollBack();
                     return [
-                        'status'  => false,
-                        'message' => 'Nilai harus berada dalam range 0-100'
+                        "status" => false,
+                        "message" => "Nilai harus berada dalam range 0-100",
                     ];
                 }
 
                 // Hitung Nilai Akhir di Server Side (PENTING: Jangan dari client)
                 // Rumus: (Tugas*20%) + (UTS*30%) + (UAS*50%)
-                $akhir = ($tugas * 0.20) + ($uts * 0.30) + ($uas * 0.50);
+                $akhir = $tugas * 0.2 + $uts * 0.3 + $uas * 0.5;
 
                 // Execute untuk setiap siswa
                 $stmt->execute([
-                    ':siswa_id' => (int) $row['siswa_id'],
-                    ':mapel_id' => (int) $row['mapel_id'],
-                    ':tahun_id' => (int) $row['tahun_id'],
-                    ':tugas'    => $tugas,
-                    ':uts'      => $uts,
-                    ':uas'      => $uas,
-                    ':akhir'    => $akhir
+                    ":siswa_id" => (int) $row["siswa_id"],
+                    ":mapel_id" => (int) $row["mapel_id"],
+                    ":tahun_id" => (int) $row["tahun_id"],
+                    ":tugas" => $tugas,
+                    ":uts" => $uts,
+                    ":uas" => $uas,
+                    ":akhir" => $akhir,
                 ]);
             }
 
             $instance->conn->commit();
             return [
-                'status'  => true,
-                'message' => 'Nilai berhasil disimpan'
+                "status" => true,
+                "message" => "Nilai berhasil disimpan",
             ];
-
         } catch (PDOException $e) {
             $instance->conn->rollBack();
             return [
-                'status'  => false,
-                'message' => 'Database error: ' . $e->getMessage()
+                "status" => false,
+                "message" => "Database error: " . $e->getMessage(),
             ];
         }
     }
@@ -138,7 +152,7 @@ class Nilai extends Model
     public static function getByTahun($tahun_id)
     {
         $instance = new static();
-        $query    = "SELECT
+        $query = "SELECT
                         n.*,
                         s.nama_lengkap,
                         s.nisn,
@@ -157,7 +171,7 @@ class Nilai extends Model
                         m.nama_mapel ASC";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -166,22 +180,30 @@ class Nilai extends Model
      * Update status validasi nilai (untuk Wali Kelas)
      * Status: Draft, Revisi, Final
      */
-    public static function updateStatus($nilai_id, $status)
+    public static function updateStatus($nilai_id, $status, $alasan = null)
     {
         $instance = new static();
-        $query    = "UPDATE $instance->table 
-                    SET status_validasi = :status 
-                    WHERE nilai_id = :nilai_id";
+
+        $query =
+            "UPDATE " . $instance->table . " SET status_validasi = :status";
+        $params = [":status" => $status, ":nilai_id" => $nilai_id];
+
+        if ($status === "Rejected") {
+            $query .= ", alasan_penolakan = :alasan";
+            $params[":alasan"] = $alasan;
+        } else {
+            // Reset reason if valid? Or keep history? Usually reset if Valid.
+            $query .= ", alasan_penolakan = NULL";
+        }
+
+        $query .= " WHERE absensi_id = :absensi_id";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
-        $stmt->bindParam(':nilai_id', $nilai_id, PDO::PARAM_INT);
-        
         try {
-            $stmt->execute();
-            return true;
+            $stmt->execute($params);
+            return ["status" => true];
         } catch (PDOException $e) {
-            return false;
+            return ["status" => false, "message" => $e->getMessage()];
         }
     }
 
@@ -192,19 +214,19 @@ class Nilai extends Model
     public static function isLocked($siswa_id, $mapel_id, $tahun_id)
     {
         $instance = new static();
-        $query    = "SELECT status_validasi FROM $instance->table 
+        $query = "SELECT status_validasi FROM $instance->table 
                     WHERE siswa_id = :siswa_id 
                     AND mapel_id = :mapel_id 
                     AND tahun_id = :tahun_id";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
-        $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(":siswa_id", $siswa_id, PDO::PARAM_INT);
+        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
+        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result && $result['status_validasi'] === 'Final';
+        return $result && $result["status_validasi"] === "Final";
     }
 
     /**
@@ -214,7 +236,7 @@ class Nilai extends Model
     public static function getRekapByKelas($kelas_id, $tahun_id)
     {
         $instance = new static();
-        $query    = "SELECT
+        $query = "SELECT
                         n.*,
                         s.nama_lengkap,
                         s.nisn,
@@ -234,8 +256,8 @@ class Nilai extends Model
                         s.nama_lengkap ASC";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -244,10 +266,13 @@ class Nilai extends Model
      * Ambil nilai dengan filter status tertentu (SIA-008 V2)
      * Untuk Wali Kelas: hanya tampilkan status 'Submitted'
      */
-    public static function getByStatus($kelas_id, $tahun_id, $status = 'Submitted')
-    {
+    public static function getByStatus(
+        $kelas_id,
+        $tahun_id,
+        $status = "Submitted"
+    ) {
         $instance = new static();
-        $query    = "SELECT
+        $query = "SELECT
                         n.*,
                         s.nama_lengkap,
                         s.nisn,
@@ -267,9 +292,9 @@ class Nilai extends Model
                         s.nama_lengkap ASC";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
-        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
+        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(":status", $status, PDO::PARAM_STR);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -278,14 +303,17 @@ class Nilai extends Model
      * Update status + catatan revisi (SIA-008 V2)
      * Digunakan oleh Wali Kelas saat memberikan feedback revisi
      */
-    public static function updateStatusWithNote($nilai_id, $status, $catatan = null)
-    {
+    public static function updateStatusWithNote(
+        $nilai_id,
+        $status,
+        $catatan = null
+    ) {
         $instance = new static();
-        
-        if ($status === 'Revisi' && empty($catatan)) {
+
+        if ($status === "Revisi" && empty($catatan)) {
             return [
-                'status'  => false,
-                'message' => 'Catatan revisi wajib diisi jika menolak!'
+                "status" => false,
+                "message" => "Catatan revisi wajib diisi jika menolak!",
             ];
         }
 
@@ -295,20 +323,20 @@ class Nilai extends Model
                  WHERE nilai_id = :nilai_id";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':status', $status, PDO::PARAM_STR);
-        $stmt->bindParam(':catatan', $catatan, PDO::PARAM_STR);
-        $stmt->bindParam(':nilai_id', $nilai_id, PDO::PARAM_INT);
-        
+        $stmt->bindParam(":status", $status, PDO::PARAM_STR);
+        $stmt->bindParam(":catatan", $catatan, PDO::PARAM_STR);
+        $stmt->bindParam(":nilai_id", $nilai_id, PDO::PARAM_INT);
+
         try {
             $stmt->execute();
             return [
-                'status'  => true,
-                'message' => 'Status berhasil diupdate'
+                "status" => true,
+                "message" => "Status berhasil diupdate",
             ];
         } catch (PDOException $e) {
             return [
-                'status'  => false,
-                'message' => 'Database error: ' . $e->getMessage()
+                "status" => false,
+                "message" => "Database error: " . $e->getMessage(),
             ];
         }
     }
@@ -320,7 +348,7 @@ class Nilai extends Model
     public static function hasSubmittedOrFinal($kelas_id, $mapel_id, $tahun_id)
     {
         $instance = new static();
-        $query    = "SELECT COUNT(*) as cnt FROM $instance->table n
+        $query = "SELECT COUNT(*) as cnt FROM $instance->table n
                     JOIN siswa s ON n.siswa_id = s.siswa_id
                     WHERE s.kelas_id = :kelas_id
                     AND n.mapel_id = :mapel_id
@@ -328,12 +356,12 @@ class Nilai extends Model
                     AND n.status_validasi IN ('Submitted', 'Final')";
 
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
-        $stmt->bindParam(':mapel_id', $mapel_id, PDO::PARAM_INT);
-        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(":mapel_id", $mapel_id, PDO::PARAM_INT);
+        $stmt->bindParam(":tahun_id", $tahun_id, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['cnt'] > 0;
+        return $result["cnt"] > 0;
     }
 }
