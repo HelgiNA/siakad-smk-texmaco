@@ -367,4 +367,18 @@ $routes->post(
     ["auth", "role:Guru"]
 );
 
+
+
+// REPORTING - Rapor/Cetak
+$routes->get(
+    "/rapor",
+    [LaporanController::class, "index"],
+    ["auth"]
+);
+$routes->get(
+    "/rapor/print",
+    [LaporanController::class, "print"],
+    ["auth"]
+);
+
 return $routes;
