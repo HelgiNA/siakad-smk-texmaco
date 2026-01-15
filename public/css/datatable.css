@@ -1,0 +1,64 @@
+/* --- 1. SEARCH & CONTROLS --- */
+.table-controls {
+    display: flex; align-items: center; padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9; flex-wrap: wrap; gap: 15px;
+    background: #fff; border-top-left-radius: 10px; border-top-right-radius: 10px;
+}
+.filter-group { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
+
+.search-box { position: relative; min-width: 250px; }
+.search-input {
+    width: 100%; padding: 10px 15px 10px 40px; border: 1px solid #e2e8f0;
+    border-radius: 8px; font-size: 0.9rem; transition: all 0.2s;
+    background: #f8fafc; color: #334155;
+}
+.search-input:focus { background: #fff; border-color: #0d6efd; outline: none; }
+.search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+
+/* Filter Dropdown Style */
+.form-select-filter {
+    padding: 10px 35px 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px;
+    font-size: 0.9rem; background-color: #f8fafc; color: #334155; cursor: pointer; outline: none;
+    min-width: 150px; appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat; background-position: right 10px center; background-size: 16px;
+}
+.form-select-filter:focus { background: #fff; border-color: #0d6efd; }
+
+/* --- 2. TABLE STYLE --- */
+.table-wrapper { overflow-x: auto; width: 100%; }
+.custom-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; white-space: nowrap; }
+.custom-table th {
+    background-color: #f8fafc; color: #64748b; font-weight: 700; text-transform: uppercase;
+    font-size: 0.75rem; letter-spacing: 0.5px; padding: 16px 24px; text-align: left; border-bottom: 1px solid #e2e8f0;
+}
+.custom-table td { padding: 16px 24px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; }
+.custom-table tr:hover td { background-color: #f8fafc; }
+
+/* --- 3. BADGES (Unified) --- */
+.badge-custom { padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.badge-active { background: #f0fdf4; color: #15803d; }   /* Hijau */
+.badge-inactive { background: #fef2f2; color: #b91c1c; } /* Merah */
+.badge-class { background: #eff6ff; color: #1d4ed8; }    /* Biru (Kelas) */
+.badge-admin { background: #e0f2fe; color: #0369a1; }    /* Biru Laut */
+.badge-guru { background: #fff7ed; color: #c2410c; }     /* Oranye */
+.badge-siswa { background: #f0fdf4; color: #15803d; }    /* Hijau */
+
+/* --- 4. BUTTONS --- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; font-size: 0.9rem; font-weight: 600; border-radius: 8px; text-decoration: none; cursor: pointer; border: 1px solid transparent; }
+.btn-primary { background-color: #0d6efd; color: white; }
+.btn-primary:hover { background-color: #0b5ed7; }
+.btn-action { width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; text-decoration: none; font-size: 1rem; }
+.btn-edit { background: #fffbeb; color: #d97706; }
+.btn-edit:hover { background: #d97706; color: white; }
+.btn-delete { background: #fef2f2; color: #ef4444; margin-left: 5px; }
+.btn-delete:hover { background: #ef4444; color: white; }
+
+/* --- 5. PAGINATION --- */
+.pagination-container { padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; flex-wrap: wrap; gap: 15px; background: #fff; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+.pagination-info { font-size: 0.9rem; color: #64748b; }
+.pagination-btns { display: flex; gap: 5px; }
+.page-btn { border: 1px solid #e2e8f0; background: white; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: #334155; }
+.page-btn:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; color: #0d6efd; }
+.page-btn.active { background: #0d6efd; color: white; border-color: #0d6efd; }
+.page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
