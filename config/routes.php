@@ -9,6 +9,7 @@ use App\Controllers\KelasController;
 use App\Controllers\MapelController;
 use App\Controllers\NilaiController;
 use App\Controllers\PlottingController;
+use App\Controllers\ProfilController;
 use App\Controllers\SiswaController;
 use App\Controllers\TahunAjaranController;
 use App\Controllers\UserController;
@@ -377,6 +378,11 @@ $routes->post("/rapor/catatan/store", [LaporanController::class, "storeCatatan"]
 
 // Cetak
 $routes->get("/rapor/print", [LaporanController::class, "print"], ["auth", "role:Guru"]);
+
+// =============================================================================
+// 7. PROFIL SISWA (Akses Siswa untuk Melihat Data Pribadi)
+// =============================================================================
+$routes->get("/profil", [ProfilController::class, "index"], ["auth", "role:Siswa"]);
 
 
 return $routes;

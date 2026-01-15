@@ -181,4 +181,59 @@ class Nilai extends Model
         $stmt->execute([':kelas_id' => $kelas_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Ambil KHS (Kartu Hasil Studi) Siswa per Tahun Ajaran
+     * Digunakan untuk halaman Profil Siswa
+     * 
+     * @param int $siswa_id
+     * @param int $tahun_id (opsional, jika tidak diisi maka ambil tahun aktif)
+     * @return array dengan keys per row: mapel_id, nama_mapel, kelompok, nilai_tugas, nilai_uts, nilai_uas, nilai_akhir, status_validasi
+     */
+    public static function getKHS($siswa_id, $tahun_id = null)
+    {
+        $instance = new static();
+        
+        // Jika tahun_id tidak diberikan, ambil tahun yang aktif
+        if ($tahun_id === null) {
+            $tahun = self::getActiveTahunAjaran();
+            $tahun_id = $tahun['tahun_id'] ?? 2; // Default fallback ke tahun_id 2
+        }
+        
+        $query = "SELECT
+                    n.nilai_id,
+                    n.mapel_id,
+                    m.nama_mapel,
+                    m.kelompok,
+                    m.kkm,
+                    n.nilai_tugas,
+                    n.nilai_uts,
+                    n.nilai_uas,
+                    n.nilai_akhir,
+                    n.status_validasi
+                  FROM {$instance->table} n
+                  JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+                  WHERE n.siswa_id = :siswa_id
+                  AND n.tahun_id = :tahun_id
+                  ORDER BY m.kelompok ASC, m.nama_mapel ASC";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
+        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? [];
+    }
+
+    /**
+     * Helper: Ambil Tahun Ajaran yang Aktif
+     */
+    private static function getActiveTahunAjaran()
+    {
+        $instance = new static();
+        $query = "SELECT tahun_id, tahun, semester FROM tahun_ajaran WHERE is_active = 1 LIMIT 1";
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?? [];
+    }
 }

@@ -155,4 +155,40 @@ class Siswa extends Model
         
         return $stmt->fetch(PDO::FETCH_ASSOC) ?? [];
     }
+
+    /**
+     * Ambil Profil Lengkap Siswa dengan Informasi Kelas
+     * Digunakan untuk halaman Profil Siswa
+     * 
+     * @param int $user_id
+     * @return array dengan keys: siswa_id, user_id, nis, nisn, nama_lengkap, tanggal_lahir, alamat, kelas_id, nama_kelas, jurusan, tahun, semester
+     */
+    public static function getProfileByUserId($user_id)
+    {
+        $instance = new static();
+        $query = "SELECT
+                    s.siswa_id,
+                    s.user_id,
+                    s.nis,
+                    s.nisn,
+                    s.nama_lengkap,
+                    s.tanggal_lahir,
+                    s.alamat,
+                    s.kelas_id,
+                    k.nama_kelas,
+                    k.jurusan,
+                    ta.tahun,
+                    ta.semester
+                  FROM " . $instance->table . " s
+                  LEFT JOIN kelas k ON s.kelas_id = k.kelas_id
+                  LEFT JOIN tahun_ajaran ta ON k.tahun_id = ta.tahun_id
+                  WHERE s.user_id = :user_id
+                  LIMIT 1";
+        
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?? [];
+    }
 }
