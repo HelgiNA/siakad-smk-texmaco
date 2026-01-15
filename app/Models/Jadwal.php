@@ -243,4 +243,57 @@ class Jadwal extends Model
         ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Ambil jadwal mengajar guru untuk hari ini
+     * Digunakan untuk Dashboard Guru
+     * 
+     * @param int $guru_id
+     * @param string $hari (nama hari: Senin, Selasa, dst)
+     * @param int|null $tahun_id (opsional, jika tidak disediakan ambil tahun aktif)
+     * @return array
+     */
+    public static function getJadwalGuruHariIni($guru_id, $hari, $tahun_id = null)
+    {
+        $instance = new static();
+        
+        // Jika tahun_id tidak diberikan, cari tahun aktif
+        if ($tahun_id === null) {
+            // Asumsikan ada fungsi atau query untuk tahun aktif
+            // Untuk sekarang, kita ambil tahun paling terbaru
+            $queryTahun = "SELECT tahun_id FROM tahun_ajaran ORDER BY tahun_id DESC LIMIT 1";
+            $stmtTahun = $instance->conn->prepare($queryTahun);
+            $stmtTahun->execute();
+            $resultTahun = $stmtTahun->fetch(PDO::FETCH_ASSOC);
+            $tahun_id = $resultTahun['tahun_id'] ?? null;
+        }
+        
+        if ($tahun_id === null) {
+            return [];
+        }
+        
+        $sql = "SELECT
+                    j.*,
+                    k.nama_kelas,
+                    m.nama_mapel,
+                    m.kode_mapel,
+                    g.nama_lengkap as nama_guru
+                FROM {$instance->table} j
+                JOIN kelas k ON j.kelas_id = k.kelas_id
+                JOIN mata_pelajaran m ON j.mapel_id = m.mapel_id
+                JOIN guru g ON j.guru_id = g.guru_id
+                WHERE j.guru_id = :guru_id
+                AND j.hari = :hari
+                AND j.tahun_id = :tahun_id
+                ORDER BY j.jam_mulai ASC";
+
+        $stmt = $instance->conn->prepare($sql);
+        $stmt->execute([
+            ':guru_id' => $guru_id,
+            ':hari' => $hari,
+            ':tahun_id' => $tahun_id
+        ]);
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

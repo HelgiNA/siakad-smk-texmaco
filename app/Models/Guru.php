@@ -41,4 +41,23 @@ class Guru extends Model
         $stmt->execute([':user_id' => $user_id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Hitung total guru yang aktif (status_aktif = 1 di tabel users)
+     * Digunakan untuk Dashboard Admin/Kepsek
+     */
+    public static function countActive()
+    {
+        $instance = new static();
+        $query = "SELECT COUNT(g.guru_id) as total
+                  FROM " . $instance->table . " g
+                  JOIN users u ON g.user_id = u.user_id
+                  WHERE u.status_aktif = 1";
+        
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $result['total'] ?? 0;
+    }
 }

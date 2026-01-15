@@ -33,4 +33,20 @@ class Kelas extends Model
         $stmt->execute([':guru_id' => $guru_id]);
         return $stmt->fetch();
     }
+
+    /**
+     * Hitung total kelas
+     * Digunakan untuk Dashboard Admin/Kepsek
+     */
+    public static function countActive()
+    {
+        $instance = new static();
+        $query = "SELECT COUNT(kelas_id) as total FROM " . $instance->table;
+        
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        
+        return $result['total'] ?? 0;
+    }
 }

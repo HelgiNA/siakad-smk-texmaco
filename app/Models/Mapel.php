@@ -15,4 +15,20 @@ class Mapel extends Model
         $instance = new static();
         return $instance::where('kode_mapel', $kode)->first();
     }
+
+    /**
+     * Hitung total mata pelajaran
+     * Digunakan untuk Dashboard Admin/Kepsek
+     */
+    public static function countActive()
+    {
+        $instance = new static();
+        $query = "SELECT COUNT(mapel_id) as total FROM " . $instance->table;
+        
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch();
+        
+        return $result['total'] ?? 0;
+    }
 }

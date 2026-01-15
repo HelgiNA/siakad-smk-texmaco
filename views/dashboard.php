@@ -1,25 +1,32 @@
 <?php ob_start(); ?>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><?php echo $title ?? 'Dashboard'; ?></h3>
-
-                <div class="card-tools">
-                </div>
-            </div>
-            <div class="card-body">
-                Selamat Datang, <b><?php echo $_SESSION['username'] ?? 'Guest'; ?></b>! <br>
-                Start creating your amazing application!
-            </div>
-            <div class="card-footer">Footer</div>
-        </div>
+<?php if (isset($error)): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Terjadi Kesalahan!</strong> <?php echo $error; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-</div>
+<?php endif; ?>
+
+<?php
+// Render konten berdasarkan role
+switch ($role) {
+    case 'Admin':
+    case 'Kepsek':
+        include 'dashboard/admin.php';
+        break;
+    case 'Guru':
+        include 'dashboard/guru.php';
+        break;
+    case 'Siswa':
+        include 'dashboard/siswa.php';
+        break;
+    default:
+        echo '<div class="alert alert-warning">Role tidak dikenal</div>';
+}
+?>
 
 <?php
     $content = ob_get_clean();
     // Pastikan path ke layout main benar
-require_once __DIR__ . '/layouts/main.php';
+    require_once __DIR__ . '/layouts/main.php';
 ?>
