@@ -129,16 +129,6 @@ ob_start();
                 <?php
                 endforeach;
                 ?>
-                
-                <tr id="noDataRow" style="display: none;">
-                    <td colspan="6" style="text-align: center; padding: 50px 20px;">
-                        <div style="color: #94a3b8; display: flex; flex-direction: column; align-items: center;">
-                            <i class="bi bi-filter-circle" style="font-size: 2.5rem; margin-bottom: 15px; opacity: 0.5;"></i>
-                            <span style="font-size: 1rem; font-weight: 500;">Data tidak ditemukan</span>
-                            <span style="font-size: 0.85rem;">Coba ubah kata kunci atau filter anda.</span>
-                        </div>
-                    </td>
-                </tr>
 
             </tbody>
         </table>

@@ -230,24 +230,23 @@ class AbsensiController extends Controller
         // 2. Find Managed Class
         $kelas = Kelas::getByWaliKelas($guru["guru_id"]);
         if (!$kelas) {
-            setAlert(
-                "warning",
-                "Anda tidak terdaftar sebagai Wali Kelas untuk kelas manapun."
-            );
             // Not a wali kelas
             $this->view("akademik/absensi/validationList", [
                 "title" => "Validasi Absensi",
                 "isWaliKelas" => false,
                 "pending" => [],
-            ]);
+            ])->with(
+                "warning",
+                "Anda tidak terdaftar sebagai Wali Kelas untuk kelas manapun."
+            );
             return;
         }
 
         // 3. Get Pending Absensi
         $pending = Absensi::getPendingByKelas($kelas["kelas_id"]);
-        dd($pending);
+
         if (empty($pending)) {
-            setAlert(
+            setFlash(
                 "info",
                 "Tidak ada pengajuan absensi yang perlu divalidasi saat ini."
             );
@@ -307,8 +306,7 @@ class AbsensiController extends Controller
         // 2. Cek Otoritas: Apakah user login adalah Wali Kelas dari kelas ini?
         $guru = Guru::findByUserId($_SESSION["user_id"]);
         $kelas = Kelas::getByWaliKelas($guru["guru_id"]);
-        
-        dd([$kelas, $absensi]);
+
         if (!$kelas || $kelas["kelas_id"] != $absensi["kelas_id"]) {
             $this->redirect("absensi/validasi")->with(
                 "error",

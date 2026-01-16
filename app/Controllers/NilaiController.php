@@ -138,9 +138,6 @@ class NilaiController extends Controller
             $catatanRevisi = $existingHeader["catatan_revisi"];
         }
 
-
-
-
         $data = [
             "title" =>
                 "Form Nilai: " .

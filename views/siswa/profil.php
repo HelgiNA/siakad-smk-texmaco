@@ -1,403 +1,314 @@
 <?php
 /**
- * View: Profil Siswa
- * Menampilkan: Biodata, Statistik Kehadiran, Daftar Nilai
+ * View: Dashboard / Profil Siswa
  */
+ob_start();
 
-ob_start(); ?>
+// Helper Predikat Sederhana
+function getPredikat($nilai)
+{
+    if ($nilai >= 90) {
+        return "A";
+    }
+    if ($nilai >= 80) {
+        return "B";
+    }
+    if ($nilai >= 75) {
+        return "C";
+    }
+    return "D";
+}
+?>
 
-        <div id="kt_app_content" class="app-content flex-column-fluid">
-            <div id="kt_app_content_container" class="app-container container-fluid">
+<style>
+    :root {
+        --c-primary: #0f172a;
+        --c-accent: #2563eb;
+        --c-bg-card: #ffffff;
+        --c-text-muted: #64748b;
+        --radius: 12px;
+    }
 
-                <!-- ROW 1: Kartu Identitas Siswa (Atas) -->
-                <div class="row mb-4">
-                    <div class="col-md-12">
-                        <div class="card shadow-sm border-0 rounded-lg">
-                            <div class="card-header bg-primary text-white p-3 rounded-top">
-                                <h3 class="card-title mb-0 fw-bold">
-                                    <i class="bi bi-card-text me-2"></i> Identitas Siswa
-                                </h3>
-                            </div>
-                            <div class="card-body p-4">
-                                <div class="row">
-                                    <!-- Kolom Kiri: Foto & Nama -->
-                                    <div class="col-md-3 text-center mb-3 mb-md-0">
-                                        <div class="mb-3">
-                                            <i class="bi bi-person-fill text-primary" style="font-size: 4rem;"></i>
-                                        </div>
-                                        <h5 class="fw-bold text-dark"><?php echo htmlspecialchars(
-                                            $profileData["nama_lengkap"] ?? "-"
-                                        ); ?></h5>
-                                        <p class="text-muted small">NIS: <?php echo htmlspecialchars(
-                                            $profileData["nis"] ?? "-"
-                                        ); ?></p>
-                                    </div>
+    /* Card Styling */
+    .profile-card {
+        background: var(--c-bg-card); border-radius: var(--radius);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
+        margin-bottom: 24px;
+    }
+    
+    .card-header-clean {
+        padding: 20px 24px; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; justify-content: space-between;
+        background: #fff;
+    }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 10px; }
 
-                                    <!-- Kolom Tengah & Kanan: Data Diri -->
-                                    <div class="col-md-9">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label text-muted small fw-bold">NIS</label>
-                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars(
-                                                        $profileData["nis"] ??
-                                                            "-"
-                                                    ); ?></p>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label text-muted small fw-bold">NISN</label>
-                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars(
-                                                        $profileData["nisn"] ??
-                                                            "-"
-                                                    ); ?></p>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label text-muted small fw-bold">Tanggal Lahir</label>
-                                                    <p class="text-dark fw-semibold">
-                                                        <?php if (
-                                                            !empty(
-                                                                $profileData[
-                                                                    "tanggal_lahir"
-                                                                ]
-                                                            )
-                                                        ) {
-                                                            echo date(
-                                                                "d/m/Y",
-                                                                strtotime(
-                                                                    $profileData[
-                                                                        "tanggal_lahir"
-                                                                    ]
-                                                                )
-                                                            );
-                                                        } else {
-                                                            echo "-";
-                                                        } ?>
-                                                    </p>
-                                                </div>
-                                            </div>
+    /* Profile Section */
+    .avatar-box {
+        width: 100px; height: 100px; background: #eff6ff; color: var(--c-accent);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 3rem; margin: 0 auto 15px; border: 4px solid #fff;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .student-name { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+    .student-nis { font-family: monospace; color: var(--c-text-muted); font-size: 0.95rem; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; }
 
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label class="form-label text-muted small fw-bold">Kelas</label>
-                                                    <p class="text-dark fw-semibold">
-                                                        <span class="badge bg-warning text-dark fs-7">
-                                                            <?php echo htmlspecialchars(
-                                                                $profileData[
-                                                                    "nama_kelas"
-                                                                ] ??
-                                                                    "Belum Ditugaskan"
-                                                            ); ?>
-                                                        </span>
-                                                    </p>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label text-muted small fw-bold">Jurusan</label>
-                                                    <p class="text-dark fw-semibold"><?php echo htmlspecialchars(
-                                                        $profileData[
-                                                            "jurusan"
-                                                        ] ?? "-"
-                                                    ); ?></p>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label text-muted small fw-bold">Tahun Ajaran</label>
-                                                    <p class="text-dark fw-semibold">
-                                                        <?php echo htmlspecialchars(
-                                                            $profileData[
-                                                                "tahun"
-                                                            ] ?? "-"
-                                                        ); ?> 
-                                                        (<?php echo htmlspecialchars(
-                                                            $profileData[
-                                                                "semester"
-                                                            ] ?? "-"
-                                                        ); ?>)
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
+    /* Info Grid */
+    .info-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; font-weight: 700; margin-bottom: 2px; }
+    .info-value { font-size: 1rem; color: #334155; font-weight: 600; }
+    
+    /* Attendance Stats */
+    .stat-circle {
+        position: relative; width: 120px; height: 120px; margin: 0 auto 20px;
+        border-radius: 50%; background: conic-gradient(var(--c-accent) 0% <?php echo $rekapAbsensi[
+            "persentase_hadir"
+        ]; ?>%, #e2e8f0 <?php echo $rekapAbsensi["persentase_hadir"]; ?>% 100%);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .stat-inner {
+        width: 100px; height: 100px; background: white; border-radius: 50%;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .stat-percent { font-size: 1.5rem; font-weight: 800; color: var(--c-accent); line-height: 1; }
+    .stat-label-small { font-size: 0.75rem; color: #64748b; margin-top: 2px; }
 
-                                        <!-- Alamat -->
-                                        <div class="row mt-3 border-top pt-3">
-                                            <div class="col-md-12">
-                                                <label class="form-label text-muted small fw-bold">Alamat</label>
-                                                <p class="text-dark"><?php echo htmlspecialchars(
-                                                    $profileData["alamat"] ??
-                                                        "-"
-                                                ); ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    .att-list-item {
+        display: flex; justify-content: space-between; padding: 10px 0;
+        border-bottom: 1px dashed #e2e8f0; font-size: 0.9rem;
+    }
+    .att-list-item:last-child { border-bottom: none; }
+
+    /* Grades Table */
+    .grade-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .grade-table th { background: #f8fafc; color: #64748b; font-weight: 700; padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .grade-table td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; }
+    .col-score { text-align: center; font-family: 'Consolas', monospace; width: 80px; }
+    
+    .badge-score { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.85rem; }
+    .score-high { color: #10b981; background: #dcfce7; }
+    .score-mid { color: #d97706; background: #fef3c7; }
+    .score-low { color: #ef4444; background: #fee2e2; }
+</style>
+
+<div style="margin-bottom: 24px;">
+    <h1 class="page-title" style="margin:0; font-size: 1.5rem; font-weight: 700;">Profil Saya</h1>
+    <p style="color: #64748b; margin: 5px 0 0;">Informasi akademik dan rekapitulasi studi.</p>
+</div>
+
+<div class="row">
+    
+    <div class="col-lg-4">
+        
+        <div class="profile-card">
+            <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); padding: 30px 20px; text-align: center;">
+                <div class="avatar-box">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="student-name"><?php echo htmlspecialchars(
+                    $profileData["nama_lengkap"]
+                ); ?></div>
+                <span class="student-nis"><?php echo htmlspecialchars(
+                    $profileData["nis"]
+                ); ?></span>
+            </div>
+            
+            <div style="padding: 24px;">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="info-label">Kelas</div>
+                        <div class="info-value"><?php echo htmlspecialchars(
+                            $profileData["nama_kelas"] ?? "-"
+                        ); ?></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-label">Tahun Ajaran</div>
+                        <div class="info-value"><?php echo htmlspecialchars(
+                            $profileData["tahun"] ?? "-"
+                        ); ?></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="info-label">Jurusan</div>
+                        <div class="info-value"><?php echo htmlspecialchars(
+                            $profileData["jurusan"] ?? "-"
+                        ); ?></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="info-label">Alamat</div>
+                        <div class="info-value" style="font-weight: 400; font-size: 0.95rem;">
+                            <?php echo htmlspecialchars(
+                                $profileData["alamat"] ?? "-"
+                            ); ?>
                         </div>
                     </div>
                 </div>
-
-                <!-- ROW 2: Statistik Kehadiran (Kiri) & Daftar Nilai (Kanan) -->
-                <div class="row">
-                    <!-- Kolom Kiri: Statistik Kehadiran -->
-                    <div class="col-md-4">
-                        <div class="card shadow-sm border-0 rounded-lg h-100">
-                            <div class="card-header bg-success text-white p-3 rounded-top">
-                                <h3 class="card-title mb-0 fw-bold">
-                                    <i class="bi bi-graph-up me-2"></i> Statistik Kehadiran
-                                </h3>
-                            </div>
-                            <div class="card-body p-4">
-                                <?php
-                                $hadir = $rekapAbsensi["hadir"] ?? 0;
-                                $sakit = $rekapAbsensi["sakit"] ?? 0;
-                                $izin = $rekapAbsensi["izin"] ?? 0;
-                                $alpa = $rekapAbsensi["alpa"] ?? 0;
-                                $total = $rekapAbsensi["total_pertemuan"] ?? 0;
-                                $persentase =
-                                    $rekapAbsensi["persentase_hadir"] ?? 0;
-                                ?>
-
-                                <!-- Progress Kehadiran -->
-                                <div class="mb-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span class="fw-bold text-dark">Persentase Kehadiran</span>
-                                        <span class="fw-bold fs-5 text-success"><?php echo $persentase; ?>%</span>
-                                    </div>
-                                    <div class="progress" style="height: 28px;">
-                                        <div class="progress-bar bg-success" role="progressbar" 
-                                             style="width: <?php echo $persentase; ?>%" 
-                                             aria-valuenow="<?php echo $persentase; ?>" 
-                                             aria-valuemin="0" aria-valuemax="100">
-                                            <span class="fw-bold text-white"><?php echo $persentase; ?>%</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Breakdown Statistik -->
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-borderless">
-                                        <tbody>
-                                            <tr>
-                                                <td class="text-muted fw-bold">
-                                                    <i class="bi bi-check-circle text-success me-2"></i> Hadir
-                                                </td>
-                                                <td class="text-end fw-bold text-dark"><?php echo $hadir; ?> hari</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted fw-bold">
-                                                    <i class="bi bi-hospital text-warning me-2"></i> Sakit
-                                                </td>
-                                                <td class="text-end fw-bold text-dark"><?php echo $sakit; ?> hari</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted fw-bold">
-                                                    <i class="bi bi-file-earmark text-info me-2"></i> Izin
-                                                </td>
-                                                <td class="text-end fw-bold text-dark"><?php echo $izin; ?> hari</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="text-muted fw-bold">
-                                                    <i class="bi bi-x-circle text-danger me-2"></i> Alpa
-                                                </td>
-                                                <td class="text-end fw-bold text-dark"><?php echo $alpa; ?> hari</td>
-                                            </tr>
-                                            <tr class="border-top">
-                                                <td class="text-muted fw-bold">Total Pertemuan</td>
-                                                <td class="text-end fw-bold text-dark"><?php echo $total; ?> hari</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Status Badge -->
-                                <div class="mt-4">
-                                    <?php if ($persentase >= 90) {
-                                        $badgeClass = "bg-success";
-                                        $status = "Sangat Baik";
-                                    } elseif ($persentase >= 75) {
-                                        $badgeClass = "bg-info";
-                                        $status = "Baik";
-                                    } elseif ($persentase >= 60) {
-                                        $badgeClass = "bg-warning";
-                                        $status = "Cukup";
-                                    } else {
-                                        $badgeClass = "bg-danger";
-                                        $status = "Kurang";
-                                    } ?>
-                                    <div class="alert alert-light-<?php echo str_replace(
-                                        "bg-",
-                                        "",
-                                        $badgeClass
-                                    ); ?> border-0 p-3 text-center">
-                                        <span class="badge <?php echo $badgeClass; ?> fw-bold fs-7">
-                                            Status: <?php echo $status; ?>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Kolom Kanan: Daftar Nilai (KHS) -->
-                    <div class="col-md-8">
-                        <div class="card shadow-sm border-0 rounded-lg">
-                            <div class="card-header bg-info text-white p-3 rounded-top">
-                                <h3 class="card-title mb-0 fw-bold">
-                                    <i class="bi bi-book me-2"></i> Daftar Nilai (KHS)
-                                </h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <?php if (!empty($listNilai)): ?>
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-striped mb-0">
-                                            <thead class="bg-light">
-                                                <tr>
-                                                    <th class="text-muted fw-bold px-4 py-3">Mata Pelajaran</th>
-                                                    <th class="text-muted fw-bold text-center py-3">Tugas</th>
-                                                    <th class="text-muted fw-bold text-center py-3">UTS</th>
-                                                    <th class="text-muted fw-bold text-center py-3">UAS</th>
-                                                    <th class="text-muted fw-bold text-center py-3">Akhir</th>
-                                                    <th class="text-muted fw-bold text-center py-3">Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach (
-                                                    $listNilai
-                                                    as $nilai
-                                                ): ?>
-                                                    <tr>
-                                                        <td class="px-4 py-3">
-                                                            <div class="fw-bold text-dark"><?php echo htmlspecialchars(
-                                                                $nilai[
-                                                                    "nama_mapel"
-                                                                ]
-                                                            ); ?></div>
-                                                            <div class="text-muted small">
-                                                                Kelompok: 
-                                                                <span class="badge bg-light-secondary text-secondary fw-bold">
-                                                                    <?php echo htmlspecialchars(
-                                                                        $nilai[
-                                                                            "kelompok"
-                                                                        ]
-                                                                    ); ?>
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td class="text-center py-3">
-                                                            <?php if (
-                                                                $nilai[
-                                                                    "is_draft"
-                                                                ]
-                                                            ): ?>
-                                                                <span class="badge bg-light-warning text-warning fw-bold">-</span>
-                                                            <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format(
-                                                                    $nilai[
-                                                                        "nilai_tugas"
-                                                                    ],
-                                                                    2
-                                                                ); ?></span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td class="text-center py-3">
-                                                            <?php if (
-                                                                $nilai[
-                                                                    "is_draft"
-                                                                ]
-                                                            ): ?>
-                                                                <span class="badge bg-light-warning text-warning fw-bold">-</span>
-                                                            <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format(
-                                                                    $nilai[
-                                                                        "nilai_uts"
-                                                                    ],
-                                                                    2
-                                                                ); ?></span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td class="text-center py-3">
-                                                            <?php if (
-                                                                $nilai[
-                                                                    "is_draft"
-                                                                ]
-                                                            ): ?>
-                                                                <span class="badge bg-light-warning text-warning fw-bold">-</span>
-                                                            <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format(
-                                                                    $nilai[
-                                                                        "nilai_uas"
-                                                                    ],
-                                                                    2
-                                                                ); ?></span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td class="text-center py-3">
-                                                            <?php if (
-                                                                $nilai[
-                                                                    "is_draft"
-                                                                ]
-                                                            ): ?>
-                                                                <span class="badge bg-light-warning text-warning fw-bold">-</span>
-                                                            <?php else: ?>
-                                                                <span class="fw-bold text-dark"><?php echo number_format(
-                                                                    $nilai[
-                                                                        "nilai_akhir"
-                                                                    ],
-                                                                    2
-                                                                ); ?></span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                        <td class="text-center py-3">
-                                                            <?php if (
-                                                                $nilai[
-                                                                    "is_draft"
-                                                                ]
-                                                            ): ?>
-                                                                <span class="badge bg-light-warning">
-                                                                    <i class="bi bi-clock"></i> Belum Rilis
-                                                                </span>
-                                                            <?php else: ?>
-                                                                <span class="badge bg-light-success text-success fw-bold">
-                                                                    <i class="bi bi-check-circle"></i> Rilis
-                                                                </span>
-                                                            <?php endif; ?>
-                                                        </td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="alert alert-light-info border-0 m-4">
-                                        <div class="text-center text-muted py-4">
-                                            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
-                                            <p class="mt-3 fw-semibold">Belum ada data nilai</p>
-                                        </div>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <!-- Keterangan -->
-                        <div class="alert alert-light-info border-0 mt-4 p-3">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-info-circle text-info me-2" style="font-size: 1.3rem;"></i>
-                                <div>
-                                    <strong class="text-info">Catatan Penting:</strong>
-                                    <ul class="mb-0 ms-3 mt-2">
-                                        <li>Nilai yang menampilkan <span class="badge bg-light-warning text-warning fw-bold ms-1">-</span> masih dalam proses validasi oleh Wali Kelas.</li>
-                                        <li>Nilai akan ditampilkan setelah divalidasi dan dirilis oleh Wali Kelas.</li>
-                                        <li>Hubungi Wali Kelas jika ada pertanyaan terkait nilai Anda.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
 
+        <div class="profile-card">
+            <div class="card-header-clean">
+                <h3 class="card-title"><i class="bi bi-calendar-check text-primary"></i> Kehadiran</h3>
+            </div>
+            <div style="padding: 24px;">
+                <div class="stat-circle">
+                    <div class="stat-inner">
+                        <span class="stat-percent"><?php echo $rekapAbsensi[
+                            "persentase_hadir"
+                        ]; ?>%</span>
+                        <span class="stat-label-small">Kehadiran</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="att-list-item">
+                        <span><i class="bi bi-check-circle-fill text-success me-2"></i> Hadir</span>
+                        <span class="fw-bold"><?php echo $rekapAbsensi[
+                            "hadir"
+                        ]; ?></span>
+                    </div>
+                    <div class="att-list-item">
+                        <span><i class="bi bi-emoji-neutral-fill text-warning me-2"></i> Sakit</span>
+                        <span class="fw-bold"><?php echo $rekapAbsensi[
+                            "sakit"
+                        ]; ?></span>
+                    </div>
+                    <div class="att-list-item">
+                        <span><i class="bi bi-info-circle-fill text-info me-2"></i> Izin</span>
+                        <span class="fw-bold"><?php echo $rekapAbsensi[
+                            "izin"
+                        ]; ?></span>
+                    </div>
+                    <div class="att-list-item">
+                        <span><i class="bi bi-x-circle-fill text-danger me-2"></i> Alpa</span>
+                        <span class="fw-bold"><?php echo $rekapAbsensi[
+                            "alpa"
+                        ]; ?></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-lg-8">
+        <div class="profile-card">
+            <div class="card-header-clean">
+                <h3 class="card-title"><i class="bi bi-journal-bookmark-fill text-primary"></i> Hasil Studi (KHS)</h3>
+                <span class="badge bg-light text-dark border">Semester <?php echo htmlspecialchars(
+                    $profileData["semester"] ?? "-"
+                ); ?></span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <?php if (empty($listNilai)): ?>
+                    <div style="padding: 50px; text-align: center; color: #94a3b8;">
+                        <i class="bi bi-journal-x" style="font-size: 3rem; opacity: 0.5;"></i>
+                        <p class="mt-2">Belum ada data nilai yang dipublikasikan.</p>
+                    </div>
+                <?php
+                    // Logic Status Nilai
+
+                    // Kalkulasi Tampilan
+
+                    // Style Predikat
+                    // Logic Status Nilai
+                    // Kalkulasi Tampilan
+                    // Style Predikat
+                    // Logic Status Nilai
+
+                    // Kalkulasi Tampilan
+
+                    // Style Predikat
+                    // Logic Status Nilai
+                    // Kalkulasi Tampilan
+                    // Style Predikat
+                    else: ?>
+                    <table class="grade-table">
+                        <thead>
+                            <tr>
+                                <th>Mata Pelajaran</th>
+                                <th class="col-score">Tugas</th>
+                                <th class="col-score">UTS</th>
+                                <th class="col-score">UAS</th>
+                                <th class="col-score">Akhir</th>
+                                <th class="col-score">Predikat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($listNilai as $nilai):
+
+                                $isDraft = $nilai["is_draft"] ?? false;
+
+                                $akhir = number_format(
+                                    $nilai["nilai_akhir"],
+                                    2
+                                );
+                                $predikat = getPredikat($nilai["nilai_akhir"]);
+
+                                $badgeClass = "score-mid";
+                                if ($predikat == "A") {
+                                    $badgeClass = "score-high";
+                                }
+                                if ($predikat == "D") {
+                                    $badgeClass = "score-low";
+                                }
+                                ?>
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: #334155;">
+                                        <?php echo htmlspecialchars(
+                                            $nilai["nama_mapel"]
+                                        ); ?>
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #94a3b8;">
+                                        <?php echo htmlspecialchars(
+                                            $nilai["kelompok"]
+                                        ); ?>
+                                    </div>
+                                </td>
+                                
+                                <?php if ($isDraft): ?>
+                                    <td colspan="5" class="text-center text-muted" style="font-style: italic; background: #fdfdfd;">
+                                        <i class="bi bi-hourglass-split me-1"></i> Nilai belum difinalisasi guru
+                                    </td>
+                                <?php else: ?>
+                                    <td class="col-score text-muted"><?php echo number_format(
+                                        $nilai["nilai_tugas"],
+                                        0
+                                    ); ?></td>
+                                    <td class="col-score text-muted"><?php echo number_format(
+                                        $nilai["nilai_uts"],
+                                        0
+                                    ); ?></td>
+                                    <td class="col-score text-muted"><?php echo number_format(
+                                        $nilai["nilai_uas"],
+                                        0
+                                    ); ?></td>
+                                    <td class="col-score" style="font-weight: 700; color: #1e293b;"><?php echo $akhir; ?></td>
+                                    <td class="col-score">
+                                        <span class="badge-score <?php echo $badgeClass; ?>"><?php echo $predikat; ?></span>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                            <?php
+                            endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <div class="alert alert-info d-flex align-items-center" role="alert" style="background: #eff6ff; border-color: #dbeafe; color: #1e40af;">
+            <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+            <div>
+                <strong>Catatan:</strong> Jika terdapat kesalahan data diri atau nilai, silakan segera hubungi Wali Kelas atau Bagian Tata Usaha.
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php
 $content = ob_get_clean();
-// Pastikan path ke layout main benar
 require_once __DIR__ . "/../layouts/main.php";
 
 

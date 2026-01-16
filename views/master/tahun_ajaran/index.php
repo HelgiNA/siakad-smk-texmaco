@@ -1,7 +1,5 @@
 <?php ob_start(); ?>
 
-<link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/css/datatable.css">
-
 <style>
     /* --- CUSTOM MODAL STYLE --- */
     .modal-overlay {
@@ -91,11 +89,12 @@
             </thead>
             <tbody id="tableBody">
                 <?php if (empty($data["tahun_ajaran"])): ?>
-                    <tr id="noDataRow">
-                        <td colspan="5" style="text-align: center; padding: 50px;">
+                    <tr id="noDataRow" style="display: none;">
+                        <td colspan="6" style="text-align: center; padding: 50px 20px;">
                             <div style="color: #94a3b8; display: flex; flex-direction: column; align-items: center;">
-                                <i class="bi bi-calendar-x" style="font-size: 2.5rem; margin-bottom: 15px; opacity: 0.5;"></i>
-                                <span style="font-size: 1rem; font-weight: 500;">Belum ada data Tahun Ajaran</span>
+                                <i class="bi bi-filter-circle" style="font-size: 2.5rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                                <span style="font-size: 1rem; font-weight: 500;">Data tidak ditemukan</span>
+                                <span style="font-size: 0.85rem;">Coba ubah kata kunci atau filter anda.</span>
                             </div>
                         </td>
                     </tr>
@@ -154,6 +153,11 @@
             </tbody>
         </table>
     </div>
+    
+    <div class="pagination-container">
+        <div class="pagination-info" id="paginationInfo">Memuat data...</div>
+        <div class="pagination-btns" id="paginationControls"></div>
+    </div>
 </div>
 
 <div id="confirmModal" class="modal-overlay">
@@ -169,8 +173,6 @@
         </div>
     </div>
 </div>
-
-<script src="<?php echo BASE_URL; ?>/public/js/datatable.js"></script>
 
 <script>
     const modal = document.getElementById('confirmModal');

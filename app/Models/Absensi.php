@@ -102,7 +102,7 @@ class Absensi extends Model
         // Join with jadwal_pelajaran to verify class match
         // Join with mapel and guru to show details
         $query =
-            "SELECT a.*, j.hari, j.jam_mulai, j.jam_selesai, m.nama_mapel, g.nama_lengkap as nama_guru
+            "SELECT a.*, j.hari, j.jam_mulai, j.jam_selesai, m.nama_mapel, m.kode_mapel, g.nama_lengkap as nama_guru
                   FROM " .
             $instance->table .
             " a
@@ -165,24 +165,27 @@ class Absensi extends Model
     /**
      * Hitung total absensi pending (Draft) untuk satu kelas
      * Digunakan untuk notifikasi Guru yang menjadi Wali Kelas
-     * 
+     *
      * @param int $kelas_id
      * @return int
      */
     public static function countPendingByKelas($kelas_id)
     {
         $instance = new static();
-        $query = "SELECT COUNT(a.absensi_id) as total
-                  FROM " . $instance->table . " a
+        $query =
+            "SELECT COUNT(a.absensi_id) as total
+                  FROM " .
+            $instance->table .
+            " a
                   JOIN jadwal_pelajaran j ON a.jadwal_id = j.jadwal_id
                   WHERE j.kelas_id = :kelas_id
                   AND a.status_validasi = 'Pending'";
-        
+
         $stmt = $instance->conn->prepare($query);
-        $stmt->bindParam(':kelas_id', $kelas_id, PDO::PARAM_INT);
+        $stmt->bindParam(":kelas_id", $kelas_id, PDO::PARAM_INT);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return $result['total'] ?? 0;
+
+        return $result["total"] ?? 0;
     }
 }

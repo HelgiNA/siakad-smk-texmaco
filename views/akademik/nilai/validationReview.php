@@ -1,261 +1,343 @@
-<?php ob_start(); ?>
+<?php
+ob_start();
+
+// 1. Pre-calculate Stats untuk Header
+$totalNilai = 0;
+$maxNilai = 0;
+$minNilai = 100;
+$countSiswa = count($details);
+$countRemed = 0;
+$KKM = 75; // Bisa diambil dari database mapel jika ada
+
+foreach ($details as $d) {
+    $val = floatval($d['nilai_akhir']);
+    $totalNilai += $val;
+    if ($val > $maxNilai) $maxNilai = $val;
+    if ($val < $minNilai) $minNilai = $val;
+    if ($val < $KKM) $countRemed++;
+}
+
+$avgNilai = $countSiswa > 0 ? $totalNilai / $countSiswa : 0;
+?>
 
 <style>
     :root {
-        --c-primary: #10b981; --c-danger: #ef4444; --c-text-main: #1f2937;
-        --c-text-muted: #6b7280; --c-bg-page: #f3f4f6; --c-bg-card: #ffffff;
-        --c-border: #e5e7eb; --radius-md: 8px;
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-        --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+        --c-bg-page: #f8fafc;
+        --c-text-main: #334155;
+        --c-text-muted: #64748b;
+        --radius: 12px;
+    }
+
+    /* Sticky Sidebar */
+    .sticky-sidebar {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+    }
+
+    /* Card Styles */
+    .review-card {
+        background: white; border-radius: var(--radius);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05); overflow: hidden;
+        margin-bottom: 20px;
     }
     
-    /* Layout styling (sama dengan absensi) */
-    .page-header { margin-bottom: 8px; }
-    .page-title { font-size: 24px; font-weight: 700; color: var(--c-text-main); margin-bottom: 4px; }
-    .meta-info { display: flex; gap: 12px; font-size: 14px; color: var(--c-text-muted); align-items: center; }
-    .meta-status { background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
-    
-    .card { background: var(--c-bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--c-border); overflow: hidden; }
-    .card-title { padding: 16px 20px; font-size: 16px; font-weight: 600; border-bottom: 1px solid var(--c-border); margin: 0; }
-    .validation-card { padding: 20px; display: flex; flex-direction: column; gap: 24px; }
-    
-    .info-list { display: flex; flex-direction: column; gap: 16px; }
-    .info-row { display: flex; flex-direction: column; gap: 4px; }
-    .info-label { color: var(--c-text-muted); font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-    .info-value { font-weight: 600; font-size: 15px; color: var(--c-text-main); }
-    
-    .action-group { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-    .btn { width: 100%; padding: 12px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-size: 14px; border: 1px solid transparent; transition: 0.2s; }
-    .btn-solid-success { background: var(--c-primary) !important; color: white !important; } .btn-solid-success:hover { background: #059669 !important; }
-    .btn-outline-danger { background: white !important; border-color: var(--c-danger) !important; color: var(--c-danger) !important; } .btn-outline-danger:hover { background: #fef2f2 !important; }
-    .btn-solid-danger { background: var(--c-danger) !important; color: white !important; }
-    .btn-ghost { background: transparent; color: var(--c-text-muted); }
-    
-    /* Table Styles Custom untuk Nilai */
-    .table-wrapper { overflow-x: auto; }
-    .att-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .att-table th, .att-table td { padding: 12px 16px; border-bottom: 1px solid var(--c-border); }
-    .att-table th { background: #f9fafb; color: var(--c-text-muted); font-weight: 600; text-align: left; }
-    
-    /* Kolom Nilai */
-    .col-score { text-align: center; width: 80px; }
-    .col-final { text-align: center; width: 80px; font-weight: 700; color: var(--c-primary); background-color: #f0fdf4; }
-
-    /* Utilities */
-    .hidden { display: none !important; }
-    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-    .modal-box { background: white; padding: 24px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: var(--shadow-lg); animation: slideUp 0.3s ease-out; }
-    
-    .input-textarea { 
-        width: 100%; padding: 12px; border: 1px solid var(--c-border); border-radius: var(--radius-md); 
-        min-height: 80px; margin-top: 8px; margin-bottom: 20px;
-        background-color: #ffffff !important; color: #1f2937 !important; 
+    .card-header-clean {
+        padding: 15px 20px; border-bottom: 1px solid #f1f5f9;
+        font-weight: 700; color: var(--c-text-main); font-size: 1rem;
+        background: #fff; display: flex; justify-content: space-between; align-items: center;
     }
-    .input-textarea:focus { outline: none; border-color: var(--c-primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
 
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-    .modal-actions .btn { width: auto; padding: 10px 20px; }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    /* Info List Side */
+    .info-group { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .info-item { display: flex; flex-direction: column; gap: 4px; }
+    .info-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--c-text-muted); font-weight: 600; }
+    .info-value { font-size: 0.95rem; font-weight: 600; color: var(--c-text-main); }
+    .info-sub { font-size: 0.85rem; color: #64748b; }
+
+    /* Stats Cards (Top of Table) */
+    .stats-container {
+        display: flex; gap: 15px; padding: 20px; background: #f8fafc; border-bottom: 1px solid #f1f5f9;
+    }
+    .stat-box {
+        flex: 1; background: white; border: 1px solid #e2e8f0; border-radius: 8px;
+        padding: 10px; text-align: center;
+    }
+    .stat-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; font-weight: 700; display: block; }
+    .stat-value { font-size: 1.1rem; font-weight: 800; color: #334155; }
+    
+    /* Table */
+    .table-wrapper { overflow-x: auto; max-height: 600px; }
+    .review-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .review-table th { 
+        background: #fff; color: #64748b; font-weight: 700; padding: 12px 15px; 
+        text-align: left; border-bottom: 2px solid #f1f5f9; position: sticky; top: 0; z-index: 10;
+    }
+    .review-table td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; color: #334155; vertical-align: middle; }
+    .review-table tr:hover td { background: #f8fafc; }
+
+    /* Score Highlighting */
+    .score-remed { color: #ef4444; font-weight: 700; }
+    .score-pass  { color: #10b981; font-weight: 700; }
+    .col-score { text-align: center; font-family: 'Consolas', monospace; }
+
+    /* Modals */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 999;
+        display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    
+    .modal-content {
+        background: white; width: 90%; max-width: 450px;
+        padding: 25px; border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        transform: translateY(10px); transition: transform 0.2s;
+    }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+
+    /* Buttons */
+    .btn-action { width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-approve { background: #10b981; color: white; margin-bottom: 10px; }
+    .btn-approve:hover { background: #059669; }
+    .btn-reject { background: white; color: #ef4444; border: 1px solid #ef4444; }
+    .btn-reject:hover { background: #fef2f2; }
+
+    .textarea-custom {
+        width: 100%; border: 1px solid #cbd5e1; border-radius: 8px;
+        padding: 12px; margin: 15px 0; min-height: 100px;
+        font-family: inherit; font-size: 0.9rem; resize: vertical;
+    }
+    .textarea-custom:focus { outline: none; border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1); }
 </style>
 
-<div>
-    <header class="page-header d-flex justify-content-between align-items-center">
-        <div>
-            <h1 class="page-title">Detail Validasi Nilai</h1>
-            <div class="meta-info">
-                <span>ID Nilai: #<?php echo htmlspecialchars($header["nilai_id"]); ?></span>
-                <span class="meta-status"><?php echo htmlspecialchars($header["status_validasi"]); ?></span>
-            </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title" style="margin:0; font-size: 1.5rem; font-weight: 700;">Review Nilai Siswa</h1>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 5px;">
+            <span style="color: #64748b; font-size: 0.9rem;">ID Pengajuan: <strong>#<?php echo $header['nilai_id']; ?></strong></span>
+            <span class="badge bg-warning text-dark border border-warning" style="font-size: 0.75rem;"><?php echo $header['status_validasi']; ?></span>
         </div>
-        <a href="<?php echo BASE_URL; ?>/nilai/validasi" class="btn btn-ghost" style="width: auto;">
-            &larr; Kembali
-        </a>
-    </header>
+    </div>
+    <a href="<?php echo BASE_URL; ?>/nilai/validasi" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px;">
+        <i class="bi bi-arrow-left me-1"></i> Kembali ke Daftar
+    </a>
+</div>
+
+<form id="mainForm" action="<?php echo BASE_URL; ?>/nilai/validasi/process" method="POST">
+    <input type="hidden" name="nilai_id" value="<?php echo $header["nilai_id"]; ?>">
+    <input type="hidden" name="action" id="actionInput" value="">
 
     <div class="row">
-        <div class="col-sm-4 col-12 mb-3">
-            <form id="validationForm" action="<?php echo BASE_URL; ?>/nilai/validasi/process" method="POST">
-                
-                <input type="hidden" name="nilai_id" value="<?php echo $header["nilai_id"]; ?>">
-                <input type="hidden" name="action" id="actionInput" value="">
+        
+        <div class="col-md-4 mb-4">
+            <div class="sticky-sidebar">
+                <div class="review-card">
+                    <div class="card-header-clean">
+                        <span><i class="bi bi-info-circle me-2 text-primary"></i> Detail Pengajuan</span>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-item">
+                            <span class="info-label">Periode Akademik</span>
+                            <span class="info-value"><?php echo htmlspecialchars($header["tahun"]); ?></span>
+                            <span class="info-sub">Semester <?php echo htmlspecialchars($header["semester"]); ?></span>
+                        </div>
 
-                <section class="card validation-card">
-                    <h2 class="card-title visually-hidden">Informasi Nilai</h2>
-                    
-                    <div class="info-list">
-                        <div class="info-row">
-                            <span class="info-label">Tahun Ajaran</span>
-                            <span class="info-value">
-                                <?php echo htmlspecialchars($header["tahun"]); ?> 
-                                (<?php echo htmlspecialchars($header["semester"]); ?>)
-                            </span>
+                        <div class="info-item">
+                            <span class="info-label">Kelas & Mapel</span>
+                            <span class="info-value text-primary"><?php echo htmlspecialchars($header["nama_mapel"]); ?></span>
+                            <span class="info-sub">Kelas: <?php echo htmlspecialchars($header["nama_kelas"]); ?></span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label">Kelas / Mapel</span>
-                            <span class="info-value">
-                                <?php echo htmlspecialchars($header["nama_kelas"]); ?> <br>
-                                <span class="text-primary"><?php echo htmlspecialchars($header["nama_mapel"]); ?></span>
-                            </span>
+
+                        <div class="info-item">
+                            <span class="info-label">Guru Pengampu</span>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                                <div style="width: 30px; height: 30px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <span class="info-value"><?php echo htmlspecialchars($header["nama_guru"]); ?></span>
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label">Guru Pengajar</span>
-                            <span class="info-value"><?php echo htmlspecialchars($header["nama_guru"]); ?></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Tanggal Input</span>
-                            <span class="info-value text-muted" style="font-weight: 400;">
+
+                        <div class="info-item">
+                            <span class="info-label">Waktu Input</span>
+                            <span class="info-sub">
                                 <?php echo date("d F Y, H:i", strtotime($header["updated_at"])); ?> WIB
                             </span>
                         </div>
                     </div>
-
-                    <div class="action-group">
-                        <button type="button" class="btn btn-solid-success" id="btnTriggerApprove">
-                            Validasi (Setujui)
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" id="btnTriggerReject">
-                            Tolak (Revisi)
-                        </button>
-                    </div>
-                </section>
-
-                <div id="modalReject" class="modal-overlay hidden">
-                    <div class="modal-box">
-                        <h3 style="margin-bottom: 8px;">Tolak Pengajuan Nilai?</h3>
-                        <p style="color: var(--c-text-muted); font-size: 14px;">
-                            Guru Mapel akan diminta merevisi nilai. Berikan catatan perbaikan.
-                        </p>
-                        
-                        <textarea name="catatan_revisi" id="rejectReason" class="input-textarea" 
-                            placeholder="Contoh: Ada nilai siswa yang tertukar..."></textarea>
-                        
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-ghost" data-close-modal>Batal</button>
-                            <button type="submit" class="btn btn-solid-danger" id="submitReject">
-                                Ya, Minta Revisi
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
-                <div id="modalApprove" class="modal-overlay hidden">
-                    <div class="modal-box">
-                        <h3 style="margin-bottom: 8px;">Finalisasi Nilai</h3>
-                        <p style="color: var(--c-text-muted); font-size: 14px; margin-bottom: 20px;">
-                            Apakah Anda yakin nilai ini sudah benar? <br>
-                            Status akan berubah menjadi <strong>FINAL</strong> dan tidak dapat diubah lagi.
-                        </p>
-                        <div class="modal-actions">
-                            <button type="button" class="btn btn-ghost" data-close-modal>Batal</button>
-                            <button type="submit" class="btn btn-solid-success" id="submitApprove">
-                                Ya, Finalisasi
-                            </button>
-                        </div>
-                    </div>
+                <div class="review-card" style="padding: 20px;">
+                    <div style="margin-bottom: 10px; font-weight: 600; color: #334155;">Tindakan Validasi:</div>
+                    <button type="button" class="btn-action btn-approve" id="btnApproveTrigger">
+                        <i class="bi bi-check-circle-fill"></i> Validasi Final
+                    </button>
+                    <button type="button" class="btn-action btn-reject" id="btnRejectTrigger">
+                        <i class="bi bi-x-circle"></i> Minta Revisi
+                    </button>
                 </div>
-
-            </form>
+            </div>
         </div>
 
-        <div class="col-sm-8 col-12">
-            <section class="card table-card">
-                <div class="d-flex justify-content-between align-items-center" style="padding: 16px 20px; border-bottom: 1px solid var(--c-border);">
-                    <h2 class="card-title" style="border:none; padding:0;">Rincian Nilai Siswa</h2>
-                    <span class="badge bg-light text-dark border">Total: <?php echo count($details); ?> Siswa</span>
+        <div class="col-md-8">
+            <div class="review-card">
+                <div class="card-header-clean">
+                    <span><i class="bi bi-calculator me-2 text-primary"></i> Rekapitulasi Nilai</span>
+                    <span class="badge bg-light text-dark border">Total: <?php echo $countSiswa; ?> Siswa</span>
                 </div>
-                
-                <div class="table-wrapper" style="max-height: 600px; overflow-y: auto;">
-                    <table class="att-table">
+
+                <div class="stats-container">
+                    <div class="stat-box">
+                        <span class="stat-label">Rata-Rata</span>
+                        <span class="stat-value"><?php echo number_format($avgNilai, 1); ?></span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Tertinggi</span>
+                        <span class="stat-value text-success"><?php echo number_format($maxNilai, 0); ?></span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Terendah</span>
+                        <span class="stat-value text-danger"><?php echo number_format($minNilai, 0); ?></span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Remedial (< 75)</span>
+                        <span class="stat-value text-danger"><?php echo $countRemed; ?></span>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="review-table">
                         <thead>
                             <tr>
-                                <th style="width: 40px; text-align: center;">No</th>
-                                <th style="width: 100px;">NIS</th>
+                                <th width="40" class="text-center">No</th>
+                                <th width="100">NIS</th>
                                 <th>Nama Siswa</th>
-                                <th class="col-score text-muted small">Tugas<br>(30%)</th>
-                                <th class="col-score text-muted small">UTS<br>(30%)</th>
-                                <th class="col-score text-muted small">UAS<br>(40%)</th>
-                                <th class="col-final small">AKHIR</th>
+                                <th class="col-score">Tugas</th>
+                                <th class="col-score">UTS</th>
+                                <th class="col-score">UAS</th>
+                                <th class="col-score text-center">Akhir</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($details as $idx => $row): ?>
+                            <?php foreach ($details as $idx => $row): 
+                                $akhir = floatval($row['nilai_akhir']);
+                                $isRemed = $akhir < $KKM;
+                            ?>
                             <tr>
-                                <td style="text-align: center;"><?php echo $idx + 1; ?></td>
-                                <td><?php echo htmlspecialchars($row["nis"]); ?></td>
-                                <td style="font-weight: 500;"><?php echo htmlspecialchars($row["nama_lengkap"]); ?></td>
+                                <td class="text-center text-muted"><?php echo $idx + 1; ?></td>
+                                <td style="font-family: monospace; color: #64748b;"><?php echo htmlspecialchars($row["nis"]); ?></td>
+                                <td style="font-weight: 600;"><?php echo htmlspecialchars($row["nama_lengkap"]); ?></td>
                                 
-                                <td class="col-score"><?php echo number_format($row['nilai_tugas'], 0); ?></td>
-                                <td class="col-score"><?php echo number_format($row['nilai_uts'], 0); ?></td>
-                                <td class="col-score"><?php echo number_format($row['nilai_uas'], 0); ?></td>
+                                <td class="col-score text-muted"><?php echo number_format($row['nilai_tugas'], 0); ?></td>
+                                <td class="col-score text-muted"><?php echo number_format($row['nilai_uts'], 0); ?></td>
+                                <td class="col-score text-muted"><?php echo number_format($row['nilai_uas'], 0); ?></td>
                                 
-                                <td class="col-final">
-                                    <?php 
-                                        // Highlight merah jika dibawah KKM (misal 75)
-                                        $style = ($row['nilai_akhir'] < 75) ? 'color: #ef4444;' : '';
-                                        echo "<span style='$style'>" . number_format($row['nilai_akhir'], 2) . "</span>";
-                                    ?>
+                                <td class="col-score">
+                                    <span class="<?php echo $isRemed ? 'score-remed' : 'score-pass'; ?>">
+                                        <?php echo number_format($akhir, 2); ?>
+                                    </span>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
-            </section>
+            </div>
         </div>
     </div>
-</div>
+
+    <div id="modalReject" class="modal-overlay">
+        <div class="modal-content">
+            <h4 style="margin: 0 0 10px; color: #ef4444; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-exclamation-triangle-fill"></i> Tolak Pengajuan?
+            </h4>
+            <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 0;">
+                Nilai akan dikembalikan ke status DRAFT. Berikan catatan revisi untuk guru mapel.
+            </p>
+            
+            <textarea name="catatan_revisi" id="rejectReason" class="textarea-custom" placeholder="Contoh: Ada nilai yang tertukar antara Budi dan Andi..."></textarea>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-action btn-modal-cancel" id="btnCancelReject" style="width: auto; background: #f1f5f9; color: #64748b;">Batal</button>
+                <button type="button" class="btn-action btn-modal-confirm" id="btnConfirmReject" style="width: auto; background: #ef4444; color: white;">Minta Revisi</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalApprove" class="modal-overlay">
+        <div class="modal-content">
+            <h4 style="margin: 0 0 10px; color: #10b981; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-check-circle-fill"></i> Konfirmasi Finalisasi
+            </h4>
+            <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">
+                Apakah Anda yakin nilai ini sudah valid? <br>
+                Status akan berubah menjadi <strong>FINAL</strong> dan nilai akan dipublikasikan ke Rapor.
+            </p>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" class="btn-action btn-modal-cancel" id="btnCancelApprove" style="width: auto; background: #f1f5f9; color: #64748b;">Batal</button>
+                <button type="button" class="btn-action btn-modal-confirm" id="btnConfirmApprove" style="width: auto; background: #10b981; color: white;">Ya, Validasi Final</button>
+            </div>
+        </div>
+    </div>
+
+</form>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const mainForm = document.getElementById('mainForm');
     const actionInput = document.getElementById('actionInput');
-    const rejectReasonInput = document.getElementById('rejectReason');
+    const rejectReason = document.getElementById('rejectReason');
 
+    // Modals
     const modalReject = document.getElementById('modalReject');
     const modalApprove = document.getElementById('modalApprove');
-    
-    const btnTriggerReject = document.getElementById('btnTriggerReject');
-    const btnTriggerApprove = document.getElementById('btnTriggerApprove');
-    
-    const btnSubmitReject = document.getElementById('submitReject');
-    const btnSubmitApprove = document.getElementById('submitApprove');
-    
-    const closeButtons = document.querySelectorAll('[data-close-modal]');
 
-    const openModal = (modal) => {
-        modal.classList.remove('hidden');
-        const focusable = modal.querySelector('textarea, button:not([data-close-modal])');
-        if(focusable) focusable.focus();
-    };
-    const closeAllModals = () => {
-        modalReject.classList.add('hidden');
-        modalApprove.classList.add('hidden');
-    };
-
-    // Events
-    btnTriggerReject.addEventListener('click', () => {
-        rejectReasonInput.value = '';
-        rejectReasonInput.setAttribute('required', 'true'); 
-        openModal(modalReject);
+    // --- APPROVE FLOW ---
+    document.getElementById('btnApproveTrigger').addEventListener('click', () => {
+        modalApprove.classList.add('active');
+        rejectReason.removeAttribute('required');
     });
 
-    btnTriggerApprove.addEventListener('click', () => {
-        rejectReasonInput.removeAttribute('required');
-        openModal(modalApprove);
+    document.getElementById('btnCancelApprove').addEventListener('click', () => {
+        modalApprove.classList.remove('active');
     });
 
-    btnSubmitReject.addEventListener('click', () => {
-        if(!rejectReasonInput.value.trim()) return; 
-        actionInput.value = 'reject'; 
+    document.getElementById('btnConfirmApprove').addEventListener('click', () => {
+        actionInput.value = 'approve';
+        mainForm.submit();
     });
 
-    btnSubmitApprove.addEventListener('click', () => {
-        actionInput.value = 'approve'; 
+    // --- REJECT FLOW ---
+    document.getElementById('btnRejectTrigger').addEventListener('click', () => {
+        modalReject.classList.add('active');
+        rejectReason.setAttribute('required', 'true');
+        setTimeout(() => rejectReason.focus(), 100); // Focus after transition
     });
 
-    closeButtons.forEach(btn => btn.addEventListener('click', closeAllModals));
+    document.getElementById('btnCancelReject').addEventListener('click', () => {
+        modalReject.classList.remove('active');
+    });
+
+    document.getElementById('btnConfirmReject').addEventListener('click', () => {
+        if (!rejectReason.value.trim()) {
+            alert("Harap isi catatan revisi.");
+            rejectReason.focus();
+            return;
+        }
+        actionInput.value = 'reject';
+        mainForm.submit();
+    });
+
+    // Close on click outside
     window.addEventListener('click', (e) => {
-        if (e.target === modalReject || e.target === modalApprove) closeAllModals();
+        if(e.target === modalReject) modalReject.classList.remove('active');
+        if(e.target === modalApprove) modalApprove.classList.remove('active');
     });
 });
 </script>

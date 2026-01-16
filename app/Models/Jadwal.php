@@ -228,6 +228,7 @@ class Jadwal extends Model
                     j.kelas_id,
                     k.nama_kelas,
                     j.mapel_id,
+                    m.kode_mapel,
                     m.nama_mapel
                 FROM {$instance->table} j
                 JOIN kelas k ON j.kelas_id = k.kelas_id
