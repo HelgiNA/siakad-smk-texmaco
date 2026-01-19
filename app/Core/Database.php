@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Core;
 
 use PDO;
@@ -33,13 +34,8 @@ class Database
                 ]
             );
         } catch (PDOException $exception) {
-            // Error handling tetap sama
-            error_log("DB Connection Error: " . $exception->getMessage()); // Log error untuk debugging
-            redirect("/login")->with([
-                "error",
-                "Connection error. Please check logs.", 
-            ]);
-            exit();
+            // Matikan redirect, paksa error muncul di layar
+            die("<h1>GAGAL KONEKSI DATABASE:</h1><br>" . $exception->getMessage());
         }
 
         return self::$instance;
