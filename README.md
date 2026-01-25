@@ -45,7 +45,6 @@ Gunakan kredensial berikut untuk menguji fitur berdasarkan role user:
 
 - **Monitoring Kehadiran**: Melihat rekapitulasi absensi pribadi.
 - **Lihat Nilai**: Mengakses transkrip nilai per semester.
-- **Cetak Rapor**: Unduh rapor format PDF secara mandiri.
 - **Profil Siswa**: Melihat dan memverifikasi data diri.
 
 ---
