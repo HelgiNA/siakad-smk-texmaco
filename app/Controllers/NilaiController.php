@@ -116,15 +116,6 @@ class NilaiController extends Controller
 
         // LOGIKA EDIT / REVISI
         if ($existingHeader) {
-            // Jika sudah FINAL, blokir edit
-            if ($existingHeader["status_validasi"] === "Final") {
-                $this->redirect("nilai")->with(
-                    "info",
-                    "Nilai sudah Final dan tidak dapat diubah."
-                );
-                exit();
-            }
-
             // Jika Draft/Revisi, ambil detailnya untuk diisi ke form
             $details = Nilai::getDetails($existingHeader["nilai_id"]);
             foreach ($details as $d) {

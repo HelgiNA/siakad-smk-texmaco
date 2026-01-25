@@ -297,4 +297,23 @@ class Jadwal extends Model
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    
+    public static function countMapelInKelas($kelas_id, $tahun_id)
+    {
+        $instance = new static();
+        
+        // Query menghitung jumlah mapel unik yang dijadwalkan
+        $query = "SELECT COUNT(DISTINCT mapel_id) as total 
+                  FROM {$instance->table} 
+                  WHERE kelas_id = :kelas_id AND tahun_id = :tahun_id";
+        
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute([
+            ':kelas_id' => $kelas_id, 
+            ':tahun_id' => $tahun_id
+        ]);
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int) ($result['total'] ?? 0);
+    }
 }

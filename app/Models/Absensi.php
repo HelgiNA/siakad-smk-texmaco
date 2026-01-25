@@ -188,4 +188,55 @@ class Absensi extends Model
 
         return $result["total"] ?? 0;
     }
+
+	public static function getGlobalAttendancePercentage()
+    {
+        $instance = new static();
+        
+        // Hitung Total Data Absensi & Total Hadir
+        $query = "SELECT 
+                    COUNT(*) as total_record,
+                    SUM(CASE WHEN status_kehadiran = 'Hadir' THEN 1 ELSE 0 END) as total_hadir
+                  FROM detail_absensi";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $total = $result['total_record'] ?? 0;
+        $hadir = $result['total_hadir'] ?? 0;
+
+        if ($total == 0) return 0;
+
+        // Hitung Persentase (Bulatkan ke 1 desimal)
+        return round(($hadir / $total) * 100, 1);
+    }
+
+    /**
+     * Mendapatkan daftar siswa dengan jumlah Alpa tertinggi
+     * Digunakan untuk Early Warning System di Dashboard Kepsek
+     */
+    public static function getSiswaBermasalah($limit = 5)
+    {
+        $instance = new static();
+
+        $query = "SELECT 
+                    s.nama_lengkap as nama,
+                    k.nama_kelas as kelas,
+                    COUNT(da.detail_id) as alpa
+                  FROM detail_absensi da
+                  JOIN siswa s ON da.siswa_id = s.siswa_id
+                  JOIN kelas k ON s.kelas_id = k.kelas_id
+                  WHERE da.status_kehadiran = 'Alpa'
+                  GROUP BY s.siswa_id
+                  HAVING alpa > 0
+                  ORDER BY alpa DESC
+                  LIMIT :limit";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

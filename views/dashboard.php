@@ -11,8 +11,10 @@
 // Render konten berdasarkan role
 switch ($role) {
     case 'Admin':
-    case 'Kepsek':
         include 'dashboard/admin.php';
+        break;
+    case 'Kepsek':
+        include 'dashboard/kepsek.php';
         break;
     case 'Guru':
         include 'dashboard/guru.php';

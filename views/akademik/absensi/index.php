@@ -58,8 +58,6 @@ ob_start();
         </h3>
     </div>
 
-    <?php if (function_exists('showAlert')) showAlert(); ?>
-
     <div class="table-wrapper">
         <table class="custom-table">
             <thead>

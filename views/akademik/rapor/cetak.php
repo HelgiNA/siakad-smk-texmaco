@@ -297,10 +297,11 @@ $tanggalCetak = date("d F Y");
                         Subang, <?php echo $tanggalCetak; ?><br>
                         Wali Kelas
                         <div class="signature-space"></div>
+                        
                         <span class="text-bold" style="text-decoration: underline;">
-                            <?php echo htmlspecialchars($catatan["nama_lengkap"] ?? "........................."); ?>
+                            <?php echo htmlspecialchars($biodata["guru_wali"] ?? "........................."); ?>
                         </span><br>
-                        NIP. <?php echo htmlspecialchars($catatan["nip"] ?? "-"); ?>
+                        NIP. <?php echo htmlspecialchars($biodata["guru_nip"] ?? "-"); ?>
                     </td>
                 </tr>
                 <tr>
@@ -308,8 +309,11 @@ $tanggalCetak = date("d F Y");
                         Mengetahui,<br>
                         Kepala Sekolah
                         <div class="signature-space"></div>
-                        <span class="text-bold" style="text-decoration: underline;">H. AGUS SYARIFUDIN, S.Pd</span><br>
-                        NIP. 19700101 200001 1 001
+                        
+                        <span class="text-bold" style="text-decoration: underline;">
+                            <?php echo htmlspecialchars($biodata["kepala_sekolah"] ?? "........................."); ?>
+                        </span><br>
+                        NIP. <?php echo htmlspecialchars($biodata["kepsek_nip"] ?? "-"); ?>
                     </td>
                 </tr>
             </table>

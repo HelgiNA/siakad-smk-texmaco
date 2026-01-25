@@ -146,48 +146,13 @@ $persenSelesai = $totalSiswa > 0 ? round(($siapCetak / $totalSiswa) * 100) : 0;
             <?php endif; ?>
 
             <div class="card-body" style="padding: 0;">
-                <?php if (function_exists("showAlert")) {
-                    showAlert();
-                } ?>
-
                 <?php if (empty($list)): ?>
                     <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
                         <i class="bi bi-person-x" style="font-size: 3rem; margin-bottom: 15px; display: block; opacity: 0.5;"></i>
                         <h5 style="color: #475569; font-weight: 600;">Data Tidak Ditemukan</h5>
                         <p style="font-size: 0.95rem;">Anda belum terdaftar sebagai Wali Kelas atau kelas belum memiliki siswa.</p>
                     </div>
-                <?php // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
-                    // 'Sudah Diisi' atau 'Belum Diisi'
+                <?php 
                     else: ?>
                     
                     <div class="table-wrapper">

@@ -7,21 +7,54 @@ use PDO;
 use PDOException;
 
 class Rapor extends Model
-{
-    /**
-     * Ambil Biodata Siswa + Info Kelas
+{/**
+     * Ambil Biodata Siswa Lengkap + Wali Kelas + Kepala Sekolah
      */
     public static function getBiodata($siswa_id)
     {
         $instance = new static();
-        $query = "SELECT s.*, k.nama_kelas, k.tingkat, k.jurusan
-                  FROM siswa s
-                  LEFT JOIN kelas k ON s.kelas_id = k.kelas_id
-                  WHERE s.siswa_id = :siswa_id";
 
-        $stmt = $instance->conn->prepare($query);
+        // 1. Query Utama: Siswa + Kelas + Wali Kelas
+        $querySiswa = "SELECT 
+                        s.siswa_id, s.user_id, s.kelas_id, s.nis, s.nisn, 
+                        s.nama_lengkap, s.tanggal_lahir, s.alamat,
+                        k.nama_kelas, k.tingkat, k.jurusan,
+                        g.nama_lengkap AS guru_wali,
+                        g.nip AS guru_nip
+                      FROM siswa s
+                      LEFT JOIN kelas k ON s.kelas_id = k.kelas_id
+                      LEFT JOIN guru g ON k.guru_wali_id = g.guru_id
+                      WHERE s.siswa_id = :siswa_id";
+
+        $stmt = $instance->conn->prepare($querySiswa);
         $stmt->execute([':siswa_id' => $siswa_id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$data) return false;
+
+        // 2. Query Kedua: Ambil Data Kepala Sekolah
+        // Mencari guru yang user-nya memiliki role 'Kepsek'
+        $queryKepsek = "SELECT g.nama_lengkap, g.nip 
+                        FROM guru g
+                        JOIN users u ON g.user_id = u.user_id
+                        WHERE u.role = 'Kepsek' AND u.status_aktif = 1
+                        LIMIT 1";
+        
+        $stmtKepsek = $instance->conn->prepare($queryKepsek);
+        $stmtKepsek->execute();
+        $kepsek = $stmtKepsek->fetch(PDO::FETCH_ASSOC);
+
+        // 3. Gabungkan Data (Inject ke array biodata)
+        if ($kepsek) {
+            $data['kepala_sekolah'] = $kepsek['nama_lengkap'];
+            $data['kepsek_nip']     = $kepsek['nip'];
+        } else {
+            // Default jika data kepsek belum ada di database
+            $data['kepala_sekolah'] = '.........................';
+            $data['kepsek_nip']     = '-';
+        }
+
+        return $data;
     }
 
     /**

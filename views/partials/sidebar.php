@@ -63,6 +63,8 @@ if (!function_exists('isOpen')) {
                 <details class="nav-accordion" <?php echo isOpen([
                     "/users",
                     "/profil",
+                    "/siswa",
+                    "/guru"
                 ]); ?>>
                     <summary>
                         <div style="display:flex;align-items:center;">
@@ -128,7 +130,7 @@ if (!function_exists('isOpen')) {
                 </details>
             <?php endif; ?>
 
-            <?php if ($role === "Guru" || $role === "Admin"): ?>
+            <?php if ($role === "Guru"): ?>
                 <li class="nav-header">GURU & AKADEMIK</li>
 
                 <details class="nav-accordion" <?php echo isOpen([
@@ -141,12 +143,9 @@ if (!function_exists('isOpen')) {
                         </div>
                     </summary>
                     <div class="nav-submenu">
-                        <a href="<?php echo BASE_URL; ?>/absensi/create" class="nav-link <?php echo isActive(
-    "/absensi/create"
-); ?>">Input Absensi</a>
                         <a href="<?php echo BASE_URL; ?>/absensi" class="nav-link <?php echo isActive(
     "/absensi"
-) && !isActive("/absensi/validasi"); ?>">Riwayat Absensi</a>
+); ?>">Input Absensi</a>
                         <a href="<?php echo BASE_URL; ?>/absensi/validasi" class="nav-link <?php echo isActive(
     "/absensi/validasi"
 ); ?>">Validasi (Wali)</a>
@@ -185,9 +184,6 @@ if (!function_exists('isOpen')) {
                         <a href="<?php echo BASE_URL; ?>/rapor/catatan" class="nav-link <?php echo isActive(
     "/rapor/catatan"
 ); ?>">Catatan Wali Kelas</a>
-                        <a href="<?php echo BASE_URL; ?>/rapor/print" class="nav-link <?php echo isActive(
-    "/rapor/print"
-); ?>">Cetak Rapor</a>
                     </div>
                 </details>
             <?php endif; ?>
@@ -200,14 +196,6 @@ if (!function_exists('isOpen')) {
 ); ?>">
                         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         Profil Saya
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="<?php echo BASE_URL; ?>/jadwal" class="nav-link <?php echo isActive(
-    "/jadwal"
-); ?>">
-                        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        Jadwal Pelajaran
                     </a>
                 </li>
             <?php endif; ?>

@@ -236,62 +236,63 @@ function getPredikat($nilai)
                         </thead>
                         <tbody>
                             <?php foreach ($listNilai as $nilai):
-
                                 $isDraft = $nilai["is_draft"] ?? false;
 
-                                $akhir = number_format(
-                                    $nilai["nilai_akhir"],
-                                    2
-                                );
-                                $predikat = getPredikat($nilai["nilai_akhir"]);
+                                // --- PERBAIKAN DI SINI ---
+                                // Kita ambil nilai mentah
+                                $rawAkhir = $nilai["nilai_akhir"];
 
+                                // Cek apakah nilainya angka. Jika ya diformat, jika tidak (misal "-") biarkan apa adanya/set 0
+                                if (is_numeric($rawAkhir)) {
+                                    $akhir = number_format((float)$rawAkhir, 2);
+                                    $predikat = getPredikat((float)$rawAkhir);
+                                } else {
+                                    $akhir = "-"; 
+                                    $predikat = "-";
+                                }
+
+                                // Tentukan warna badge berdasarkan predikat
                                 $badgeClass = "score-mid";
                                 if ($predikat == "A") {
                                     $badgeClass = "score-high";
                                 }
-                                if ($predikat == "D") {
+                                if ($predikat == "D" || $predikat == "-") {
                                     $badgeClass = "score-low";
                                 }
+                                // -------------------------
                                 ?>
                             <tr>
                                 <td>
                                     <div style="font-weight: 600; color: #334155;">
-                                        <?php echo htmlspecialchars(
-                                            $nilai["nama_mapel"]
-                                        ); ?>
+                                        <?php echo htmlspecialchars($nilai["nama_mapel"]); ?>
                                     </div>
                                     <div style="font-size: 0.8rem; color: #94a3b8;">
-                                        <?php echo htmlspecialchars(
-                                            $nilai["kelompok"]
-                                        ); ?>
+                                        <?php echo htmlspecialchars($nilai["kelompok"]); ?>
                                     </div>
                                 </td>
-                                
+
                                 <?php if ($isDraft): ?>
                                     <td colspan="5" class="text-center text-muted" style="font-style: italic; background: #fdfdfd;">
                                         <i class="bi bi-hourglass-split me-1"></i> Nilai belum difinalisasi guru
                                     </td>
                                 <?php else: ?>
-                                    <td class="col-score text-muted"><?php echo number_format(
-                                        $nilai["nilai_tugas"],
-                                        0
-                                    ); ?></td>
-                                    <td class="col-score text-muted"><?php echo number_format(
-                                        $nilai["nilai_uts"],
-                                        0
-                                    ); ?></td>
-                                    <td class="col-score text-muted"><?php echo number_format(
-                                        $nilai["nilai_uas"],
-                                        0
-                                    ); ?></td>
+                                    <td class="col-score text-muted">
+                                        <?php echo is_numeric($nilai["nilai_tugas"]) ? number_format($nilai["nilai_tugas"], 0) : '-'; ?>
+                                    </td>
+                                    <td class="col-score text-muted">
+                                        <?php echo is_numeric($nilai["nilai_uts"]) ? number_format($nilai["nilai_uts"], 0) : '-'; ?>
+                                    </td>
+                                    <td class="col-score text-muted">
+                                        <?php echo is_numeric($nilai["nilai_uas"]) ? number_format($nilai["nilai_uas"], 0) : '-'; ?>
+                                    </td>
+
                                     <td class="col-score" style="font-weight: 700; color: #1e293b;"><?php echo $akhir; ?></td>
                                     <td class="col-score">
                                         <span class="badge-score <?php echo $badgeClass; ?>"><?php echo $predikat; ?></span>
                                     </td>
                                 <?php endif; ?>
                             </tr>
-                            <?php
-                            endforeach; ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 <?php endif; ?>

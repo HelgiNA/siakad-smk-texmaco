@@ -7,17 +7,27 @@ $maxNilai = 0;
 $minNilai = 100;
 $countSiswa = count($details);
 $countRemed = 0;
-$KKM = 75; // Bisa diambil dari database mapel jika ada
+$countIncomplete = 0; // [BARU] Hitung siswa yang belum dinilai
+$KKM = 75; 
 
 foreach ($details as $d) {
     $val = floatval($d['nilai_akhir']);
+    
+    // [BARU] Logika Cek Kelengkapan
+    // Jika nilai akhir 0, kita asumsikan guru belum input nilai
+    // Atau bisa dicek spesifik: if ($d['nilai_tugas'] == 0 && $d['nilai_uts'] == 0 ...)
+    if ($val == 0) {
+        $countIncomplete++;
+    }
+
     $totalNilai += $val;
     if ($val > $maxNilai) $maxNilai = $val;
     if ($val < $minNilai) $minNilai = $val;
-    if ($val < $KKM) $countRemed++;
+    if ($val < $KKM && $val > 0) $countRemed++; // Hanya hitung remed jika nilainya bukan 0
 }
 
 $avgNilai = $countSiswa > 0 ? $totalNilai / $countSiswa : 0;
+$isDataComplete = ($countIncomplete === 0 && $countSiswa > 0); // [BARU] Flag kelengkapan
 ?>
 
 <style>
@@ -174,9 +184,22 @@ $avgNilai = $countSiswa > 0 ? $totalNilai / $countSiswa : 0;
 
                 <div class="review-card" style="padding: 20px;">
                     <div style="margin-bottom: 10px; font-weight: 600; color: #334155;">Tindakan Validasi:</div>
-                    <button type="button" class="btn-action btn-approve" id="btnApproveTrigger">
-                        <i class="bi bi-check-circle-fill"></i> Validasi Final
-                    </button>
+
+                    <?php if ($isDataComplete): ?>
+                        <button type="button" class="btn-action btn-approve" id="btnApproveTrigger">
+                            <i class="bi bi-check-circle-fill"></i> Validasi Final
+                        </button>
+                    <?php else: ?>
+                        <div class="alert alert-warning p-2 mb-2" style="font-size: 0.85rem; border-left: 3px solid #f59e0b; background: #fffbeb;">
+                            <i class="bi bi-exclamation-circle-fill text-warning"></i> 
+                            <b>Belum Bisa Validasi!</b><br>
+                            Terdapat <strong><?php echo $countIncomplete; ?></strong> siswa belum memiliki nilai (Nilai 0).
+                        </div>
+                        <button type="button" class="btn-action btn-approve" disabled style="opacity: 0.6; cursor: not-allowed; background: #94a3b8;">
+                            <i class="bi bi-lock-fill"></i> Validasi Final
+                        </button>
+                    <?php endif; ?>
+
                     <button type="button" class="btn-action btn-reject" id="btnRejectTrigger">
                         <i class="bi bi-x-circle"></i> Minta Revisi
                     </button>
@@ -226,21 +249,31 @@ $avgNilai = $countSiswa > 0 ? $totalNilai / $countSiswa : 0;
                         <tbody>
                             <?php foreach ($details as $idx => $row): 
                                 $akhir = floatval($row['nilai_akhir']);
-                                $isRemed = $akhir < $KKM;
+                                $isRemed = $akhir < $KKM && $akhir > 0;
+                                $isEmpty = $akhir == 0; // [BARU] Cek kosong
                             ?>
-                            <tr>
+                            <tr class="<?php echo $isEmpty ? 'bg-danger-subtle' : ''; ?>" <?php echo $isEmpty ? 'style="background-color: #fef2f2;"' : ''; ?>>
                                 <td class="text-center text-muted"><?php echo $idx + 1; ?></td>
                                 <td style="font-family: monospace; color: #64748b;"><?php echo htmlspecialchars($row["nis"]); ?></td>
-                                <td style="font-weight: 600;"><?php echo htmlspecialchars($row["nama_lengkap"]); ?></td>
-                                
+                                <td style="font-weight: 600;">
+                                    <?php echo htmlspecialchars($row["nama_lengkap"]); ?>
+                                    <?php if($isEmpty): ?>
+                                        <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">Kosong</span>
+                                    <?php endif; ?>
+                                </td>
+
                                 <td class="col-score text-muted"><?php echo number_format($row['nilai_tugas'], 0); ?></td>
                                 <td class="col-score text-muted"><?php echo number_format($row['nilai_uts'], 0); ?></td>
                                 <td class="col-score text-muted"><?php echo number_format($row['nilai_uas'], 0); ?></td>
-                                
+
                                 <td class="col-score">
-                                    <span class="<?php echo $isRemed ? 'score-remed' : 'score-pass'; ?>">
-                                        <?php echo number_format($akhir, 2); ?>
-                                    </span>
+                                    <?php if ($isEmpty): ?>
+                                        <span class="text-danger fw-bold">-</span>
+                                    <?php else: ?>
+                                        <span class="<?php echo $isRemed ? 'score-remed' : 'score-pass'; ?>">
+                                            <?php echo number_format($akhir, 2); ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -287,7 +320,6 @@ $avgNilai = $countSiswa > 0 ? $totalNilai / $countSiswa : 0;
     </div>
 
 </form>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const mainForm = document.getElementById('mainForm');
@@ -298,41 +330,64 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalReject = document.getElementById('modalReject');
     const modalApprove = document.getElementById('modalApprove');
 
+    // Buttons (Ambil elemen berdasarkan ID)
+    const btnApprove = document.getElementById('btnApproveTrigger');
+    const btnReject = document.getElementById('btnRejectTrigger');
+    
+    // Tombol di dalam Modal
+    const btnCancelApprove = document.getElementById('btnCancelApprove');
+    const btnConfirmApprove = document.getElementById('btnConfirmApprove');
+    const btnCancelReject = document.getElementById('btnCancelReject');
+    const btnConfirmReject = document.getElementById('btnConfirmReject');
+
     // --- APPROVE FLOW ---
-    document.getElementById('btnApproveTrigger').addEventListener('click', () => {
-        modalApprove.classList.add('active');
-        rejectReason.removeAttribute('required');
-    });
+    // PENTING: Cek dulu apakah tombol Approve ada (karena bisa saja hidden/disabled)
+    if (btnApprove) {
+        btnApprove.addEventListener('click', () => {
+            modalApprove.classList.add('active');
+            rejectReason.removeAttribute('required');
+        });
+    }
 
-    document.getElementById('btnCancelApprove').addEventListener('click', () => {
-        modalApprove.classList.remove('active');
-    });
+    if (btnCancelApprove) {
+        btnCancelApprove.addEventListener('click', () => {
+            modalApprove.classList.remove('active');
+        });
+    }
 
-    document.getElementById('btnConfirmApprove').addEventListener('click', () => {
-        actionInput.value = 'approve';
-        mainForm.submit();
-    });
+    if (btnConfirmApprove) {
+        btnConfirmApprove.addEventListener('click', () => {
+            actionInput.value = 'approve';
+            mainForm.submit();
+        });
+    }
 
     // --- REJECT FLOW ---
-    document.getElementById('btnRejectTrigger').addEventListener('click', () => {
-        modalReject.classList.add('active');
-        rejectReason.setAttribute('required', 'true');
-        setTimeout(() => rejectReason.focus(), 100); // Focus after transition
-    });
+    if (btnReject) {
+        btnReject.addEventListener('click', () => {
+            modalReject.classList.add('active');
+            rejectReason.setAttribute('required', 'true');
+            setTimeout(() => rejectReason.focus(), 100); 
+        });
+    }
 
-    document.getElementById('btnCancelReject').addEventListener('click', () => {
-        modalReject.classList.remove('active');
-    });
+    if (btnCancelReject) {
+        btnCancelReject.addEventListener('click', () => {
+            modalReject.classList.remove('active');
+        });
+    }
 
-    document.getElementById('btnConfirmReject').addEventListener('click', () => {
-        if (!rejectReason.value.trim()) {
-            alert("Harap isi catatan revisi.");
-            rejectReason.focus();
-            return;
-        }
-        actionInput.value = 'reject';
-        mainForm.submit();
-    });
+    if (btnConfirmReject) {
+        btnConfirmReject.addEventListener('click', () => {
+            if (!rejectReason.value.trim()) {
+                alert("Harap isi catatan revisi.");
+                rejectReason.focus();
+                return;
+            }
+            actionInput.value = 'reject';
+            mainForm.submit();
+        });
+    }
 
     // Close on click outside
     window.addEventListener('click', (e) => {

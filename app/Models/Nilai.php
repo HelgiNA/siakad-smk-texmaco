@@ -191,41 +191,41 @@ class Nilai extends Model
      * @return array dengan keys per row: mapel_id, nama_mapel, kelompok, nilai_tugas, nilai_uts, nilai_uas, nilai_akhir, status_validasi
      */
     public static function getKHS($siswa_id, $tahun_id = null)
-{
-    $instance = new static();
-    
-    // Jika tahun_id tidak diberikan, ambil tahun yang aktif
-    if ($tahun_id === null) {
-        $tahun = self::getActiveTahunAjaran();
-        $tahun_id = $tahun['tahun_id'] ?? 2; 
+    {
+        $instance = new static();
+
+        // Jika tahun_id tidak diberikan, ambil tahun yang aktif
+        if ($tahun_id === null) {
+            $tahun = self::getActiveTahunAjaran();
+            $tahun_id = $tahun['tahun_id'] ?? 2; 
+        }
+
+        // Perbaikan Query: Tambahkan JOIN ke detail_nilai (dn)
+        $query = "SELECT
+                    n.nilai_id,
+                    n.mapel_id,
+                    m.nama_mapel,
+                    m.kelompok,
+                    m.kkm,
+                    dn.nilai_tugas,   -- Ambil dari detail_nilai
+                    dn.nilai_uts,     -- Ambil dari detail_nilai
+                    dn.nilai_uas,     -- Ambil dari detail_nilai
+                    dn.nilai_akhir,   -- Ambil dari detail_nilai
+                    n.status_validasi
+                  FROM {$instance->table} n
+                  JOIN detail_nilai dn ON n.nilai_id = dn.nilai_id
+                  JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+                  WHERE dn.siswa_id = :siswa_id  -- Filter siswa ada di tabel detail
+                  AND n.tahun_id = :tahun_id
+                  ORDER BY m.kelompok ASC, m.nama_mapel ASC";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
+        $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? [];
     }
-    
-    // Perbaikan Query: Tambahkan JOIN ke detail_nilai (dn)
-    $query = "SELECT
-                n.nilai_id,
-                n.mapel_id,
-                m.nama_mapel,
-                m.kelompok,
-                m.kkm,
-                dn.nilai_tugas,   -- Ambil dari detail_nilai
-                dn.nilai_uts,     -- Ambil dari detail_nilai
-                dn.nilai_uas,     -- Ambil dari detail_nilai
-                dn.nilai_akhir,   -- Ambil dari detail_nilai
-                n.status_validasi
-              FROM {$instance->table} n
-              JOIN detail_nilai dn ON n.nilai_id = dn.nilai_id
-              JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
-              WHERE dn.siswa_id = :siswa_id  -- Filter siswa ada di tabel detail
-              AND n.tahun_id = :tahun_id
-              ORDER BY m.kelompok ASC, m.nama_mapel ASC";
-
-    $stmt = $instance->conn->prepare($query);
-    $stmt->bindParam(':siswa_id', $siswa_id, PDO::PARAM_INT);
-    $stmt->bindParam(':tahun_id', $tahun_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC) ?? [];
-}
 
 
     /**
@@ -238,5 +238,35 @@ class Nilai extends Model
         $stmt = $instance->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC) ?? [];
+    }
+    
+	/**
+     * Mendapatkan daftar input nilai yang statusnya belum Final
+     * Digunakan untuk Dashboard Kepsek (Monitoring Guru)
+     */
+    public static function getPendingSubmission($limit = 5)
+    {
+        $instance = new static();
+
+        // Ambil data nilai yang statusnya BUKAN 'Final' (Draft atau Submitted)
+        // Join ke Kelas, Mapel, dan Guru untuk info lengkap
+        $query = "SELECT 
+                    n.status_validasi as status,
+                    k.nama_kelas as kelas,
+                    m.nama_mapel as mapel,
+                    g.nama_lengkap as guru
+                  FROM nilai n
+                  JOIN kelas k ON n.kelas_id = k.kelas_id
+                  JOIN mata_pelajaran m ON n.mapel_id = m.mapel_id
+                  JOIN guru g ON n.guru_id = g.guru_id
+                  WHERE n.status_validasi != 'Final'
+                  ORDER BY n.updated_at DESC
+                  LIMIT :limit";
+
+        $stmt = $instance->conn->prepare($query);
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

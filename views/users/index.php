@@ -1,5 +1,15 @@
 <?php ob_start(); ?>
 
+<style>
+    /* Badge Kepsek (Ungu/Indigo - Wibawa) */
+    .badge-kepsek { 
+        background: #e0e7ff; 
+        color: #4338ca; 
+        border: 1px solid #c7d2fe; 
+    }
+</style>
+
+
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
     <div>
         <h1 class="page-title" style="margin:0;">Manajemen Pengguna</h1>
@@ -30,18 +40,32 @@
             </thead>
             <tbody id="tableBody">
                 <?php
+                // Ambil ID user yang sedang login untuk proteksi
+                $currentUserId = $_SESSION['user']['user_id'] ?? 0; 
+
                 $no = 1;
-                foreach ($users as $user): ?>
+                foreach ($users as $user): 
+                    // Cek apakah baris ini adalah user yang sedang login
+                    $isSelf = ($user['user_id'] == $currentUserId);
+
+                    // Cek apakah baris ini adalah Kepsek
+                    $isKepsek = ($user['role'] == 'Kepsek');
+                ?>
                 <tr class="data-row">
                     <td><?php echo $no++; ?></td>
+
                     <td class="searchable-name">
-                        <strong><?php echo htmlspecialchars(
-                            $user["username"]
-                        ); ?></strong>
+                        <strong><?php echo htmlspecialchars($user["username"]); ?></strong>
+                        <?php if($isSelf): ?>
+                            <span style="font-size: 0.75rem; color: #64748b; margin-left: 5px;">(Anda)</span>
+                        <?php endif; ?>
                     </td>
+
                     <td class="searchable-role">
                         <?php if ($user["role"] == "Admin"): ?>
                             <span class="badge-custom badge-admin"><i class="bi bi-shield-lock-fill"></i> Admin</span>
+                        <?php elseif ($user["role"] == "Kepsek"): ?>
+                            <span class="badge-custom badge-kepsek"><i class="bi bi-star-fill"></i> Kepsek</span>
                         <?php elseif ($user["role"] == "Guru"): ?>
                             <span class="badge-custom badge-guru"><i class="bi bi-person-workspace"></i> Guru</span>
                         <?php elseif ($user["role"] == "Siswa"): ?>
@@ -50,27 +74,35 @@
                             <span class="badge-custom badge-guest">Guest</span>
                         <?php endif; ?>
                     </td>
+
                     <td style="text-align: center;">
-                        <a href="<?php echo BASE_URL; ?>/users/edit?id=<?php echo $user[
-    "user_id"
-]; ?>" 
-                           class="btn-action btn-edit" title="Edit Data">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-                        <a href="<?php echo BASE_URL; ?>/users/delete?id=<?php echo $user[
-    "user_id"
-]; ?>" 
-                           class="btn-action btn-delete" 
-                           onclick="return confirm('Apakah Anda yakin ingin menghapus user <?php echo htmlspecialchars(
-                               $user["username"]
-                           ); ?>?')" 
-                           title="Hapus Data">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                        <?php if ($isKepsek): ?>
+                            <span class="text-muted" style="font-size: 0.85rem; font-style: italic;">
+                                <i class="bi bi-lock-fill"></i> Protected
+                            </span>
+                        <?php elseif ($isSelf): ?>
+                            <a href="<?php echo BASE_URL; ?>/users/edit?id=<?php echo $user["user_id"]; ?>" 
+                               class="btn-action btn-edit" title="Edit Profil Saya">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <button class="btn-action btn-delete" disabled style="opacity: 0.3; cursor: not-allowed;" title="Tidak bisa menghapus akun sendiri">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        <?php else: ?>
+                            <a href="<?php echo BASE_URL; ?>/users/edit?id=<?php echo $user["user_id"]; ?>" 
+                               class="btn-action btn-edit" title="Edit Data">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>/users/delete?id=<?php echo $user["user_id"]; ?>" 
+                               class="btn-action btn-delete" 
+                               onclick="return confirm('Apakah Anda yakin ingin menghapus user <?php echo htmlspecialchars($user["username"]); ?>?')" 
+                               title="Hapus Data">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        <?php endif; ?>
                     </td>
                 </tr>
-                <?php endforeach;
-                ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>
